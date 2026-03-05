@@ -22,7 +22,8 @@ export const createBootcampInputSchema = z.object({
           "image/gif",
         ].includes(file.type),
       { message: "Invalid image file type" }
-    ),
+    )
+    .optional(),
 });
 
 export type CreateBootcampInput = z.infer<typeof createBootcampInputSchema>;
