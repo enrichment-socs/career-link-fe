@@ -23,9 +23,10 @@ interface StudentProps {
   cur: number;
   lastPage: number;
   search: string;
+  fetching: boolean;
 }
 
-const HomeAdmin = ({ student, cur, lastPage, search }: StudentProps) => {
+const HomeAdmin = ({ student, cur, lastPage, search, fetching }: StudentProps) => {
 
   const [isLoading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -34,12 +35,12 @@ const HomeAdmin = ({ student, cur, lastPage, search }: StudentProps) => {
   const navigate = useNavigate();
   const revalidator = useRevalidator();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [searchInput, setSearchInput] = useState(search);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const triggerSearch = () => {
+    const value = searchRef.current?.value ?? '';
     const params = new URLSearchParams();
-    if (searchInput) params.set('search', searchInput);
+    if (value) params.set('search', value);
     params.set('page', '1');
     navigate(`/home?${params}`);
   };
@@ -134,10 +135,10 @@ const HomeAdmin = ({ student, cur, lastPage, search }: StudentProps) => {
       <h1 className="text-2xl text-primary font-bold mb-4">Student Lists</h1>
       <div className="mb-4 flex gap-2 w-full max-w-md">
         <input
+          ref={searchRef}
           type="text"
           placeholder="Search by name, NIM, or email..."
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
+          defaultValue={search}
           onKeyDown={(e) => e.key === 'Enter' && triggerSearch()}
           className="flex-1 border border-gray-300 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
@@ -210,43 +211,18 @@ const HomeAdmin = ({ student, cur, lastPage, search }: StudentProps) => {
       <TableLayout
         header={<MasterDataTableHeader />}
       >
-        {student.sort((a, b) => compare(a.nim ?? '', b.nim ?? '')).map(
-          (e, idx) => (
-            <StudentRow key={e.nim ?? idx} cur={cur} idx={idx} e={e} />
+        {fetching ? (
+          <tr>
+            <td colSpan={10} className="py-10 text-center text-sm text-gray-400">
+              Loading...
+            </td>
+          </tr>
+        ) : (
+          student.sort((a, b) => compare(a.nim ?? '', b.nim ?? '')).map(
+            (e, idx) => (
+              <StudentRow key={e.nim ?? idx} cur={cur} idx={idx} e={e} />
+            )
           )
-          // <tr key={idx} className="bg-white shadow rounded-md">
-          //     <td className="px-4 py-3 rounded-l-md">
-          //         <input type="checkbox" className="w-4 h-4" />
-          //     </td>
-          //     <td className="px-4 py-3 text-sm text-center">
-          //         {e.nim ?? '-'}
-          //     </td>
-          //     <td className="px-4 py-3 text-sm text-center">
-          //         {e.name}
-          //     </td>
-          //     <td className="px-4 py-3 text-sm text-center">
-          //         {e.email}
-          //     </td>
-          //     <td className="px-4 py-3 text-sm text-center">
-          //         {e.phone.replace('+62', '0')}
-          //     </td>
-          //     <td className="px-4 py-3 text-sm text-center">
-          //         {e.major ?? '-'}
-          //     </td>
-          //     <td className="px-4 py-3 text-sm rounded-r-md">
-          //         <div className="flex justify-center gap-4">
-          //             <button className="p-1 text-blue-600 hover:bg-blue-100 rounded-md transition-colors">
-          //                 <MdEdit className="text-primary text-3xl"/>
-          //             </button>
-          //             <button className="p-1 text-red-600 hover:bg-red-100 rounded-md transition-colors">
-          //                 <MdDelete className="text-primary text-3xl"/>
-          //             </button>
-          //             <button className="bg-accent text-white px-4 py-1 rounded-md text-sm">
-          //                 Detail
-          //             </button>
-          //         </div>
-          //     </td>
-          // </tr>
         )}
       </TableLayout>
       <Paginator cur={cur} student={student} onPrev={onPrev} onNext={onNext} lastPage={lastPage} />

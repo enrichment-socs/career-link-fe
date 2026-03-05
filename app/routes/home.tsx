@@ -38,11 +38,15 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const [meta, setMeta] = useState<{ last_page: number }>({
     last_page: 1
   })
+  const [fetching, setFetching] = useState(false)
 
   const fetch = async () => {
+    setFetching(true)
+    setStudents([])
     const { data: students, meta } = await getUsers(page, 10, search || undefined);
     setStudents(students)
     setMeta(meta)
+    setFetching(false)
   }
 
   useEffect(() => {
@@ -62,7 +66,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   return (
     <>
       {(user && user.name == "admin") ? (
-        <HomeAdmin student={students} cur={page} lastPage={meta.last_page} search={search} />
+        <HomeAdmin student={students} cur={page} lastPage={meta.last_page} search={search} fetching={fetching} />
       ) : (
         <HomeProfileCard />
       )}
