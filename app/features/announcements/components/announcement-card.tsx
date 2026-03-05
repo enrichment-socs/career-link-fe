@@ -72,11 +72,9 @@ export const AnnouncementCard = ({ announcement, onSelect }: AnnouncementCardPro
         </CardHeader>
 
         <CardContent className="pt-0">
-          <NavLink to={`/announcements/${announcement.id}`} className="block">
             <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
               {announcement.description}
             </p>
-          </NavLink>
 
           {role === "admin" && (
             <div className="flex items-center justify-between pt-3 border-t border-border/50">
