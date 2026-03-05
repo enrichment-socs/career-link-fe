@@ -6,6 +6,7 @@ import { Button } from "~/components/ui/button";
 import { exportToExcel, importExcel } from "~/lib/excel";
 import { useNavigate, useRevalidator } from "react-router";
 import { syncUser } from "../api/sync-student-data";
+import { getUsers } from "../api/get-student-data";
 import { useRef, useState, type ChangeEvent } from "react";
 import { MasterDataTableHeader } from "~/components/ui/table-header";
 import StudentRow from "./student-row";
@@ -26,6 +27,7 @@ const HomeAdmin = ({ student, cur, lastPage }: StudentProps) => {
   const [isLoading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [search, setSearch] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
   const navigate = useNavigate();
   const revalidator = useRevalidator();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -110,6 +112,20 @@ const HomeAdmin = ({ student, cur, lastPage }: StudentProps) => {
     });
   };
 
+  const downloadAllStudents = async () => {
+    setIsDownloading(true);
+    const toastId = toast.loading("Fetching all student data...");
+    try {
+      const { data: all } = await getUsers(1, 99999);
+      exportToExcel("student-data-master", all);
+      toast.success("Download complete", { id: toastId });
+    } catch (error) {
+      toast.error(getErrorMessage(error), { id: toastId });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <div className="container flex flex-col">
       <h1 className="text-2xl text-primary font-bold mb-4">Student Lists</h1>
@@ -124,10 +140,11 @@ const HomeAdmin = ({ student, cur, lastPage }: StudentProps) => {
 
         <div className="flex gap-4">
           <Button
-            onClick={() => exportToExcel("student-data-master", student)}
+            onClick={downloadAllStudents}
+            disabled={isDownloading}
             className="flex text-accent border border-accent bg-white items-center h-12 rounded-md gap-2 p-3 hover:text-white transition duration-400"
           >
-            Download Student Data
+            {isDownloading ? "Downloading..." : "Download Student Data"}
           </Button>
           <label htmlFor="student-file" className="flex text-accent border border-accent bg-white items-center h-12 rounded-md gap-2 p-3 hover:text-white hover:bg-primary transition duration-400 cursor-pointer">
             Import Student Data from Excel
