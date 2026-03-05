@@ -36,7 +36,7 @@ export const AnnouncementCard = ({ announcement, onSelect }: AnnouncementCardPro
                 {role !== "admin" && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3" />
-                    {new Date(announcement.created_at).toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" })}
+                    {announcement.created_at}
                   </div>
                 )}
               </div>
@@ -80,7 +80,7 @@ export const AnnouncementCard = ({ announcement, onSelect }: AnnouncementCardPro
             <div className="flex items-center justify-between pt-3 border-t border-border/50">
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Calendar className="h-3 w-3" />
-                Created {new Date(announcement.created_at).toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" })}
+                Created {announcement.created_at}
               </div>
               <Badge variant="secondary" className="text-xs">
                 Published

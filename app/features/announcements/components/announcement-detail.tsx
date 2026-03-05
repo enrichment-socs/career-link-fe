@@ -77,11 +77,7 @@ export const AnnouncementDetail = ({ announcement }: Props) => {
               <AnnouncementTag type={announcement.type} />
               <Badge variant="outline" className="flex items-center gap-1.5">
                 <CalendarDays className="h-3 w-3" />
-                {new Date(announcement.created_at).toLocaleDateString("id-ID", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                {announcement.created_at}
               </Badge>
             </div>
           </CardHeader>
