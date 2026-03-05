@@ -182,7 +182,7 @@ const HomeAdmin = ({ student, cur, lastPage }: StudentProps) => {
       >
         {filteredStudents.sort((a, b) => compare(a.nim ?? '', b.nim ?? '')).map(
           (e, idx) => (
-            <StudentRow cur={cur} idx={idx} e={e} />
+            <StudentRow key={e.nim ?? idx} cur={cur} idx={idx} e={e} />
           )
           // <tr key={idx} className="bg-white shadow rounded-md">
           //     <td className="px-4 py-3 rounded-l-md">
