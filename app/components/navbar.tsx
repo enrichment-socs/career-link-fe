@@ -4,12 +4,13 @@ import { useRole } from "~/provider/role-testing-provider";
 import { NavItem } from "./ui/nav-item";
 import { Button } from "./ui/button";
 import { useAuth } from "~/lib/auth";
-import { FaDoorOpen } from "react-icons/fa";
-import { DoorClosed, DoorClosedIcon, DoorOpen } from "lucide-react";
+import { DoorOpen, RefreshCw } from "lucide-react";
+import { useRevalidator } from "react-router";
 
 export default function Navbar() {
   const { role } = useRole();
   const { logout } = useAuth();
+  const revalidator = useRevalidator();
 
   const navLinks = [
     { label: "Home", to: "home" },
@@ -48,12 +49,25 @@ export default function Navbar() {
             return <NavItem key={link.label} link={link} />;
           })}
         </div>
-        <Button onClick={() => {
-          logout("/")
-        }}>
-          <DoorOpen />
-          {"Log out"}
-        </Button>
+        <div className="flex items-center gap-2">
+          {role === "admin" && (
+            <Button
+              variant="ghost"
+              onClick={() => revalidator.revalidate()}
+              title="Refresh Data"
+              className="text-white hover:text-white hover:bg-white/20"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh Data
+            </Button>
+          )}
+          <Button onClick={() => {
+            logout("/")
+          }}>
+            <DoorOpen />
+            {"Log out"}
+          </Button>
+        </div>
       </div>
     </>
   );

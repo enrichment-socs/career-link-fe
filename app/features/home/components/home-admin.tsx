@@ -35,9 +35,11 @@ const HomeAdmin = ({ student, cur, lastPage, search }: StudentProps) => {
   const revalidator = useRevalidator();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const onSearch = (value: string) => {
+  const [searchInput, setSearchInput] = useState(search);
+
+  const triggerSearch = () => {
     const params = new URLSearchParams();
-    if (value) params.set('search', value);
+    if (searchInput) params.set('search', searchInput);
     params.set('page', '1');
     navigate(`/home?${params}`);
   };
@@ -130,13 +132,19 @@ const HomeAdmin = ({ student, cur, lastPage, search }: StudentProps) => {
   return (
     <div className="container flex flex-col">
       <h1 className="text-2xl text-primary font-bold mb-4">Student Lists</h1>
-      <input
-        type="text"
-        placeholder="Search by name, NIM, or email..."
-        value={search}
-        onChange={(e) => onSearch(e.target.value)}
-        className="mb-4 w-full max-w-md border border-gray-300 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-      />
+      <div className="mb-4 flex gap-2 w-full max-w-md">
+        <input
+          type="text"
+          placeholder="Search by name, NIM, or email..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && triggerSearch()}
+          className="flex-1 border border-gray-300 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+        <Button onClick={triggerSearch} className="h-9 px-4">
+          Search
+        </Button>
+      </div>
       <div className="flex justify-between items-center">
 
         <div className="flex gap-4">
@@ -241,7 +249,7 @@ const HomeAdmin = ({ student, cur, lastPage, search }: StudentProps) => {
           // </tr>
         )}
       </TableLayout>
-      <Paginator cur={cur} student={filteredStudents} onPrev={onPrev} onNext={onNext} lastPage={lastPage} />
+      <Paginator cur={cur} student={student} onPrev={onPrev} onNext={onNext} lastPage={lastPage} />
     </div>
   );
 };
