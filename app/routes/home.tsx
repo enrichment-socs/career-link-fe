@@ -34,6 +34,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
   const page = parseInt(url.searchParams.get("page") ?? "1");
   const search = url.searchParams.get("search") ?? "";
+  const major = url.searchParams.get("major") ?? "";
   const [students, setStudents] = useState<User[]>([])
   const [meta, setMeta] = useState<{ last_page: number }>({
     last_page: 1
@@ -43,7 +44,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const fetch = async () => {
     setFetching(true)
     setStudents([])
-    const { data: students, meta } = await getUsers(page, 10, search || undefined);
+    const { data: students, meta } = await getUsers(page, 10, search || undefined, major || undefined);
     setStudents(students)
     setMeta(meta)
     setFetching(false)
@@ -66,7 +67,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   return (
     <>
       {(user && user.name == "admin") ? (
-        <HomeAdmin student={students} cur={page} lastPage={meta.last_page} search={search} fetching={fetching} />
+        <HomeAdmin student={students} cur={page} lastPage={meta.last_page} search={search} major={major} fetching={fetching} />
       ) : (
         <HomeProfileCard />
       )}
