@@ -5,7 +5,7 @@ import { AnnouncementType } from "~/types/enum";
 export const createAnnouncementInputSchema = z.object({
     title: z.string().min(1, "title cant be empty"),
     description: z.string().min(1, "description cant be empty"),
-    image_file: z.instanceof(File),
+    image_file: z.instanceof(File).optional(),
     type: z.nativeEnum(AnnouncementType)
 })
 

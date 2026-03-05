@@ -42,7 +42,7 @@ export const CreateAnnouncement = ({onSuccess}:Props) => {
             toast.success(res.message, {id: toastId})
             await onSuccess()
         } catch (error) {
-            toast.success(getErrorMessage(error), {id: toastId})
+            toast.error(getErrorMessage(error), {id: toastId})
         }
     }
 
