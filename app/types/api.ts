@@ -23,7 +23,7 @@ export type User = {
   duration: string;
   job_start_date: string;
   job_end_date: string;
-  cv_image_path: string;
+  cv_file_path: string;
 };
 
 export type Announcement = {

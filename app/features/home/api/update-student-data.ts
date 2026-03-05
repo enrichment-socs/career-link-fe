@@ -12,7 +12,7 @@ export const updateStudentInputSchema = z.object({
   phone: z.string().min(1, "Phone is required"),
   major: z.string().min(1, "Major is required"),
   skill: z.string().min(1, "Skill is required"),
-  cv_file: z.instanceof(File),
+  cv_file: z.instanceof(File).optional(),
 });
 
 export type UpdateStudentDataInput = z.infer<typeof updateStudentInputSchema>;

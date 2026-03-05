@@ -40,7 +40,7 @@ export const HomeProfileCard = () => {
       user &&
       (user.skill == "" ||
         user.future_position == "" ||
-        user.cv_image_path == "")
+        user.cv_file_path == "")
     ) {
       setActiveModal("update");
     }
@@ -54,7 +54,7 @@ export const HomeProfileCard = () => {
         onClose={() => {
           if (
             user &&
-            (user.cv_image_path == "" ||
+            (user.cv_file_path == "" ||
               user.skill == "" ||
               user.future_position == "")
           ) {
