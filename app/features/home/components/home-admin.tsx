@@ -22,27 +22,25 @@ interface StudentProps {
   student: User[];
   cur: number;
   lastPage: number;
+  search: string;
 }
 
-const HomeAdmin = ({ student, cur, lastPage }: StudentProps) => {
+const HomeAdmin = ({ student, cur, lastPage, search }: StudentProps) => {
 
   const [isLoading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [search, setSearch] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const navigate = useNavigate();
   const revalidator = useRevalidator();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredStudents = student.filter((s) => {
-    const q = search.toLowerCase();
-    return (
-      (s.name ?? "").toLowerCase().includes(q) ||
-      (s.nim ?? "").toLowerCase().includes(q) ||
-      (s.email ?? "").toLowerCase().includes(q)
-    );
-  });
+  const onSearch = (value: string) => {
+    const params = new URLSearchParams();
+    if (value) params.set('search', value);
+    params.set('page', '1');
+    navigate(`/home?${params}`);
+  };
 
   // Student data template based on User type
   const studentTemplate = [
@@ -136,7 +134,7 @@ const HomeAdmin = ({ student, cur, lastPage }: StudentProps) => {
         type="text"
         placeholder="Search by name, NIM, or email..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => onSearch(e.target.value)}
         className="mb-4 w-full max-w-md border border-gray-300 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
       />
       <div className="flex justify-between items-center">
@@ -200,11 +198,11 @@ const HomeAdmin = ({ student, cur, lastPage }: StudentProps) => {
         </SheetContent>
       </Sheet>
       {progress > 0 && <Progress value={progress} className="w-full" />}
-      <Paginator cur={cur} student={filteredStudents} onPrev={onPrev} onNext={onNext} lastPage={lastPage} />
+      <Paginator cur={cur} student={student} onPrev={onPrev} onNext={onNext} lastPage={lastPage} />
       <TableLayout
         header={<MasterDataTableHeader />}
       >
-        {filteredStudents.sort((a, b) => compare(a.nim ?? '', b.nim ?? '')).map(
+        {student.sort((a, b) => compare(a.nim ?? '', b.nim ?? '')).map(
           (e, idx) => (
             <StudentRow key={e.nim ?? idx} cur={cur} idx={idx} e={e} />
           )

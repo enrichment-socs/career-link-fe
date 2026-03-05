@@ -19,9 +19,10 @@ interface Props {
 
 const StudentRow = ({ idx, cur, e }: Props) => {
   const [editOpen, setEditOpen] = useState(false);
-  const [cvOpen, setCvOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const revalidator = useRevalidator();
+
+  const isExternalCv = e.cv_file_path?.startsWith("http") ?? false;
 
   const handleDelete = async () => {
     const toastId = toast.loading("Deleting student...");
@@ -81,36 +82,24 @@ const StudentRow = ({ idx, cur, e }: Props) => {
 
       <TableCell className="w-[6%] text-center">
         {cvUrl ? (
-          <>
-            <div className="flex gap-1 justify-center">
-              <Button variant="outline" size="icon" onClick={() => setCvOpen(true)}>
-                <Eye className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                asChild
-              >
-                <a href={cvUrl} download target="_blank" rel="noreferrer">
-                  <Download className="h-4 w-4" />
+          <div className="flex gap-1 justify-center">
+            {isExternalCv ? (
+              <Button variant="outline" size="icon" asChild>
+                <a href={cvUrl} target="_blank" rel="noreferrer">
+                  <Eye className="h-4 w-4" />
                 </a>
               </Button>
-            </div>
-            <Sheet open={cvOpen} onOpenChange={setCvOpen}>
-              <SheetContent side="bottom" className="h-[85vh]">
-                <SheetHeader>
-                  <SheetTitle>{e.name} — CV</SheetTitle>
-                </SheetHeader>
-                <div className="h-[calc(100%-60px)] mt-2">
-                  <embed
-                    src={cvUrl}
-                    type="application/pdf"
-                    className="w-full h-full rounded-md border"
-                  />
-                </div>
-              </SheetContent>
-            </Sheet>
-          </>
+            ) : (
+              <Button variant="outline" size="icon" onClick={() => window.open(cvUrl, "_blank")}>
+                <Eye className="h-4 w-4" />
+              </Button>
+            )}
+            <Button variant="outline" size="icon" asChild>
+              <a href={cvUrl} download target="_blank" rel="noreferrer">
+                <Download className="h-4 w-4" />
+              </a>
+            </Button>
+          </div>
         ) : (
           <span className="text-muted-foreground text-xs">-</span>
         )}

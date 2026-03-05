@@ -33,13 +33,14 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const { url } = loaderData
 
   const page = parseInt(url.searchParams.get("page") ?? "1");
+  const search = url.searchParams.get("search") ?? "";
   const [students, setStudents] = useState<User[]>([])
   const [meta, setMeta] = useState<{ last_page: number }>({
     last_page: 1
   })
 
   const fetch = async () => {
-    const { data: students, meta } = await getUsers(page, 10);
+    const { data: students, meta } = await getUsers(page, 10, search || undefined);
     setStudents(students)
     setMeta(meta)
   }
@@ -48,7 +49,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     if (user && user.name == 'admin') {
       fetch()
     }
-  }, [user])
+  }, [user, loaderData])
 
 
   if (!user) {
@@ -61,7 +62,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   return (
     <>
       {(user && user.name == "admin") ? (
-        <HomeAdmin student={students} cur={page} lastPage={meta.last_page} />
+        <HomeAdmin student={students} cur={page} lastPage={meta.last_page} search={search} />
       ) : (
         <HomeProfileCard />
       )}
