@@ -15,6 +15,8 @@ import toast from "react-hot-toast";
 import { getErrorMessage } from "~/lib/error";
 import { Progress } from "~/components/ui/progress";
 import { createBatchUsers, type BatchUserInput } from "../api/create-batch-users";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "~/components/ui/sheet";
+import CreateStudentData from "./create-student-data";
 
 interface StudentProps {
   student: User[];
@@ -28,6 +30,7 @@ const HomeAdmin = ({ student, cur, lastPage }: StudentProps) => {
   const [progress, setProgress] = useState(0);
   const [search, setSearch] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const navigate = useNavigate();
   const revalidator = useRevalidator();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -173,8 +176,29 @@ const HomeAdmin = ({ student, cur, lastPage }: StudentProps) => {
             <FaFilter />
             <div>Filter</div>
           </div>
+          <Button
+            onClick={() => setAddOpen(true)}
+            className="flex items-center h-12 rounded-md gap-2 p-3"
+          >
+            + Add New Student
+          </Button>
         </div>
       </div>
+      <Sheet open={addOpen} onOpenChange={setAddOpen}>
+        <SheetContent side="right" className="overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Add New Student</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 px-4">
+            <CreateStudentData
+              onSuccess={() => {
+                setAddOpen(false);
+                revalidator.revalidate();
+              }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
       {progress > 0 && <Progress value={progress} className="w-full" />}
       <Paginator cur={cur} student={filteredStudents} onPrev={onPrev} onNext={onNext} lastPage={lastPage} />
       <TableLayout

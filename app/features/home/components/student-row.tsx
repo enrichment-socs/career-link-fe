@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Trash2, Eye } from "lucide-react";
+import { Pencil, Trash2, Eye, Download } from "lucide-react";
 import { useRevalidator } from "react-router";
 import toast from "react-hot-toast";
 import TooltipLayout from "~/components/layouts/tooltip-layout";
@@ -36,7 +36,7 @@ const StudentRow = ({ idx, cur, e }: Props) => {
   };
 
   const cvUrl = e.cv_file_path
-    ? `${import.meta.env.VITE_STORAGE_URL}${e.cv_file_path}`
+    ? (e.cv_file_path.startsWith("http") ? e.cv_file_path : `${import.meta.env.VITE_STORAGE_URL}${e.cv_file_path}`)
     : null;
 
   return (
@@ -82,9 +82,20 @@ const StudentRow = ({ idx, cur, e }: Props) => {
       <TableCell className="w-[6%] text-center">
         {cvUrl ? (
           <>
-            <Button variant="outline" size="icon" onClick={() => setCvOpen(true)}>
-              <Eye className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-1 justify-center">
+              <Button variant="outline" size="icon" onClick={() => setCvOpen(true)}>
+                <Eye className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                asChild
+              >
+                <a href={cvUrl} download target="_blank" rel="noreferrer">
+                  <Download className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
             <Sheet open={cvOpen} onOpenChange={setCvOpen}>
               <SheetContent side="bottom" className="h-[85vh]">
                 <SheetHeader>
