@@ -40,9 +40,9 @@ const CreateAnnouncementReply = ({id, content, announcementId, userId, onSuccess
     }
 
     return (<Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className={"flex flex-col gap-2"}>
             <TextAreaField control={form.control} name="content" placeholder="insert reply here" label="Reply"/>
-            <Button>Send</Button>
+            <Button className={"w-fit"}>Send</Button>
         </form>
     </Form>)
 }

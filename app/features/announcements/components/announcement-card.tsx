@@ -2,7 +2,7 @@ import type { Announcement, User } from "~/types/api";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
-import { NavLink } from "react-router";
+import {NavLink, useNavigate} from "react-router";
 import { AnnouncementTag } from "~/components/announcement/announcement-tag";
 import { useRole } from "~/provider/role-testing-provider";
 import { Edit2, Trash2, Calendar, Send } from "lucide-react";
@@ -10,7 +10,12 @@ import type { ModalType } from "~/components/modal";
 import { sendAnnouncement } from "../api/send-email-announcement";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "~/lib/error";
-import { useState } from "react";
+import {useEffect, useState} from "react";
+import {useAuth} from "~/lib/auth";
+import {updateAnnouncementReply} from "~/features/announcements/api/update-announcement-reply";
+import {createAnnouncementReply} from "~/features/announcements/api/create-announcement-reply";
+import {createAnnouncementApply} from "~/features/announcements/api/create-announcement-apply";
+import {getUserApplied} from "~/features/announcements/api/get-user-applied";
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -20,75 +25,121 @@ interface AnnouncementCardProps {
 
 export const AnnouncementCard = ({ announcement, onSelect }: AnnouncementCardProps) => {
   const { role } = useRole();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isApplied, setIsApplied] = useState<boolean>(false)
 
+    useEffect(() => {
+        const getAnnouncementStatus = async () => {
+            if(user){
+                try {
+                    let response = false
+                    if (user){
+                        response = await getUserApplied({user_id: user.id, announcement_id: announcement.id})
+                    }
+                    setIsApplied(response)
+                } catch (error) {
+                    console.log(error)
+                    setIsApplied(false)
+                }
+            }else{
+                setIsApplied(false)
+            }
+        }
+
+        getAnnouncementStatus()
+    }, [announcement]);
+
+  const applyJob = async () => {
+      const toastId = toast.loading("Sending applications...")
+      try {
+          if (user){
+              await createAnnouncementApply({ user_id: user.id, announcement_id: announcement.id })
+          }
+          toast.success("Application successfully sent", {id: toastId})
+          setIsApplied(true)
+      } catch (error) {
+          toast.error("Application failed to sent", {id: toastId})
+          setIsApplied(false)
+      }
+  }
 
   return (
     <Card className="group hover:shadow-md transition-all duration-200 border-border/50">
-      <NavLink to={`/announcements/${announcement.id}`} className="block">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-lg text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                {announcement.title}
-              </h3>
-              <div className="flex items-center gap-2 mb-2">
-                <AnnouncementTag type={announcement.type} />
-                {role !== "admin" && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    {announcement.created_at}
-                  </div>
-                )}
-              </div>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-lg text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
+              {announcement.title}
+            </h3>
+            <div className="flex items-center gap-2 mb-2">
+              <AnnouncementTag type={announcement.type} />
+              {role !== "admin" && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Calendar className="h-3 w-3" />
+                  {announcement.created_at}
+                </div>
+              )}
             </div>
-
-            {role === "admin" && (
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                  variant="ghost"
-                  
-                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    onSelect(announcement, 'update')
-                  }}
-                  >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  
-                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    onSelect(announcement, 'delete')
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
           </div>
-        </CardHeader>
-
-        <CardContent className="pt-0">
-            <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
-              {announcement.description}
-            </p>
 
           {role === "admin" && (
-            <div className="flex items-center justify-between pt-3 border-t border-border/50">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Calendar className="h-3 w-3" />
-                Created {announcement.created_at}
-              </div>
-              <Badge variant="secondary" className="text-xs">
-                Published
-              </Badge>
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                variant="ghost"
+
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                onClick={(e) => {
+                  e.preventDefault()
+                  onSelect(announcement, 'update')
+                }}
+                >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                onClick={(e) => {
+                  e.preventDefault()
+                  onSelect(announcement, 'delete')
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           )}
-        </CardContent>
-      </NavLink>
+        </div>
+      </CardHeader>
+
+      <CardContent className="pt-0">
+          <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
+            {announcement.description}
+          </p>
+
+
+        <div className={"w-full flex flex-row gap-5"}>
+
+          <Button onClick={() => {navigate(`/announcements/${announcement.id}`)}}>
+            View Details
+          </Button>
+          <Button onClick={applyJob} disabled={isApplied}>
+              {isApplied ? "Already applied" : "Apply Job"}
+          </Button>
+        </div>
+
+        {role === "admin" && (
+          <div className="flex items-center justify-between pt-3 border-t border-border/50">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Calendar className="h-3 w-3" />
+              Created {announcement.created_at}
+            </div>
+            <Badge variant="secondary" className="text-xs">
+              Published
+            </Badge>
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 };

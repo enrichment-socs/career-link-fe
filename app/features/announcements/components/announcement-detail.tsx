@@ -21,6 +21,8 @@ import toast from "react-hot-toast";
 import { getUsers } from "~/features/home/api/get-student-data";
 import { getErrorMessage } from "~/lib/error";
 import { Modal } from "~/components/modal";
+import {createAnnouncementApply} from "~/features/announcements/api/create-announcement-apply";
+import {getUserApplied} from "~/features/announcements/api/get-user-applied";
 
 interface Props {
   announcement: Announcement;
@@ -31,7 +33,7 @@ export const AnnouncementDetail = ({ announcement }: Props) => {
   const [replies, setReplies] = useState<AnnouncementReply[]>([])
   const [isSend, setSend] = useState(false)
   const [users, setUsers] = useState<User[]>([])
-
+  const [isApplied, setIsApplied] = useState<boolean>(false)
 
   const getReplies = async () => {
 
@@ -46,9 +48,34 @@ export const AnnouncementDetail = ({ announcement }: Props) => {
     setUsers(users)
   }
 
+  const applyJob = async () => {
+    const toastId = toast.loading("Sending applications...")
+    try {
+      if (user){
+        await createAnnouncementApply({ user_id: user.id, announcement_id: announcement.id })
+      }
+      toast.success("Application successfully sent", {id: toastId})
+      setIsApplied(true)
+    } catch (error) {
+      toast.error("Application failed to sent", {id: toastId})
+      setIsApplied(false)
+    }
+  }
+
+  const getAnnouncementStatus = async () => {
+    if(user){
+      let response = await getUserApplied({user_id: user.id, announcement_id: announcement.id})
+      setIsApplied(response)
+    }else{
+      setIsApplied(false)
+    }
+  }
+
+
   useEffect(() => {
     getReplies()
     getAllUsers()
+    getAnnouncementStatus()
   }, [])
 
   if (!user){
@@ -105,6 +132,9 @@ export const AnnouncementDetail = ({ announcement }: Props) => {
                 {announcement.description}
               </p>
             </div>
+            <Button onClick={applyJob} disabled={isApplied}>
+              {isApplied ? "Already applied" : "Apply Job"}
+            </Button>
           </CardContent>
         </Card>
       </AccordionLayout>
