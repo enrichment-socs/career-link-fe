@@ -4,6 +4,9 @@ export interface BatchUserInput {
   email: string;
   name: string;
   major: string;
+  gpa:number;
+  status:string;
+  cv:string;
   phone: string;
   nim: string;
   cv_file_path?: string;

@@ -58,15 +58,27 @@ const StudentRow = ({ idx, cur, e }: Props) => {
         </TooltipLayout>
       </TableCell>
 
-      <TableCell className="w-[12%] text-center">
-        {e?.phone ? e.phone.replace("+62", "0") : "-"}
-      </TableCell>
+      {/*<TableCell className="w-[12%] text-center">*/}
+      {/*  {e?.phone ? e.phone.replace("+62", "0") : "-"}*/}
+      {/*</TableCell>*/}
 
       <TableCell className="w-[8%] text-center whitespace-normal break-words">
         <TooltipLayout text={e?.major ?? "no major yet"}>
           <p>{e?.major ? e.major : "-"}</p>
         </TooltipLayout>
       </TableCell>
+
+        <TableCell className="w-[8%] text-center whitespace-normal break-words">
+            <TooltipLayout text={e?.gpa ?? "no gpa yet"}>
+                <p>{e?.gpa ? e.gpa : "-"}</p>
+            </TooltipLayout>
+        </TableCell>
+
+        <TableCell className="w-[8%] text-center whitespace-normal break-words">
+            <TooltipLayout text={e?.status ?? "no status yet"}>
+                <p>{e?.status ? e.status : "-"}</p>
+            </TooltipLayout>
+        </TableCell>
 
       <TableCell className="w-[9%] text-center whitespace-normal break-words">
         <TooltipLayout text={e?.future_position ?? "no future position yet"}>
@@ -80,30 +92,36 @@ const StudentRow = ({ idx, cur, e }: Props) => {
         </TooltipLayout>
       </TableCell>
 
-      <TableCell className="w-[6%] text-center">
-        {cvUrl ? (
-          <div className="flex gap-1 justify-center">
-            {isExternalCv ? (
-              <Button variant="outline" size="icon" asChild>
-                <a href={cvUrl} target="_blank" rel="noreferrer">
-                  <Eye className="h-4 w-4" />
-                </a>
-              </Button>
-            ) : (
-              <Button variant="outline" size="icon" onClick={() => window.open(cvUrl, "_blank")}>
-                <Eye className="h-4 w-4" />
-              </Button>
-            )}
-            <Button variant="outline" size="icon" asChild>
-              <a href={cvUrl} download target="_blank" rel="noreferrer">
-                <Download className="h-4 w-4" />
-              </a>
-            </Button>
-          </div>
-        ) : (
-          <span className="text-muted-foreground text-xs">-</span>
-        )}
-      </TableCell>
+        <TableCell className="w-[7%] text-center whitespace-normal break-words">
+            <TooltipLayout text={e?.skill ?? "no cv yet"}>
+                <p>{e?.cv ? e.cv : "-"}</p>
+            </TooltipLayout>
+        </TableCell>
+
+      {/*<TableCell className="w-[6%] text-center">*/}
+      {/*  {cvUrl ? (*/}
+      {/*    <div className="flex gap-1 justify-center">*/}
+      {/*      {isExternalCv ? (*/}
+      {/*        <Button variant="outline" size="icon" asChild>*/}
+      {/*          <a href={cvUrl} target="_blank" rel="noreferrer">*/}
+      {/*            <Eye className="h-4 w-4" />*/}
+      {/*          </a>*/}
+      {/*        </Button>*/}
+      {/*      ) : (*/}
+      {/*        <Button variant="outline" size="icon" onClick={() => window.open(cvUrl, "_blank")}>*/}
+      {/*          <Eye className="h-4 w-4" />*/}
+      {/*        </Button>*/}
+      {/*      )}*/}
+      {/*      <Button variant="outline" size="icon" asChild>*/}
+      {/*        <a href={cvUrl} download target="_blank" rel="noreferrer">*/}
+      {/*          <Download className="h-4 w-4" />*/}
+      {/*        </a>*/}
+      {/*      </Button>*/}
+      {/*    </div>*/}
+      {/*  ) : (*/}
+      {/*    <span className="text-muted-foreground text-xs">-</span>*/}
+      {/*  )}*/}
+      {/*</TableCell>*/}
 
       <TableCell className="w-[16%] flex gap-1 justify-center items-center">
         {confirmDelete ? (

@@ -10,8 +10,10 @@ const MasterDataTableHeader = () => {
               <TableHead className="h-full w-[10%] text-center">NIM</TableHead>
               <TableHead className="h-full w-[12%] text-center">Name</TableHead>
               <TableHead className="h-full w-[17%] text-center">Email</TableHead>
-              <TableHead className="h-full w-[12%] text-center">Phone</TableHead>
+              {/*<TableHead className="h-full w-[12%] text-center">Phone</TableHead>*/}
               <TableHead className="h-full w-[8%] text-center">Major</TableHead>
+                <TableHead className="h-full w-[8%] text-center">GPA</TableHead>
+                <TableHead className="h-full w-[8%] text-center whitespace-normal word-break">Employment Status</TableHead>
               <TableHead className="h-full w-[9%] text-center whitespace-normal word-break">Future Position</TableHead>
               <TableHead className="h-full w-[7%] text-center">Skill</TableHead>
               <TableHead className="h-full w-[6%] text-center">CV</TableHead>

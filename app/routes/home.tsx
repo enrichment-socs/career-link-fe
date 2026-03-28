@@ -35,6 +35,10 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const page = parseInt(url.searchParams.get("page") ?? "1");
   const search = url.searchParams.get("search") ?? "";
   const major = url.searchParams.get("major") ?? "";
+  const minGpa = url.searchParams.get("min_gpa") ?? "";
+  const maxGpa = url.searchParams.get("max_gpa") ?? "";
+  const gpaSort = url.searchParams.get("gpa_sort") ?? "";
+  const status = url.searchParams.get("status") ?? "";
   const [students, setStudents] = useState<User[]>([])
   const [meta, setMeta] = useState<{ last_page: number }>({
     last_page: 1
@@ -44,7 +48,17 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const fetch = async () => {
     setFetching(true)
     setStudents([])
-    const { data: students, meta } = await getUsers(page, 10, search || undefined, major || undefined);
+    const { data: students, meta } = await getUsers(
+        page,
+        10,
+        search || undefined,
+        major || undefined,
+        minGpa || undefined,
+        maxGpa || undefined,
+        gpaSort || undefined,
+        status || undefined
+    );
+    console.log(students)
     setStudents(students)
     setMeta(meta)
     setFetching(false)
@@ -67,7 +81,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   return (
     <>
       {(user && user.name == "admin") ? (
-        <HomeAdmin student={students} cur={page} lastPage={meta.last_page} search={search} major={major} fetching={fetching} />
+        <HomeAdmin student={students} cur={page} lastPage={meta.last_page} search={search} major={major} minGpa={minGpa} maxGpa={maxGpa} gpaSort={gpaSort} status={status} fetching={fetching} />
       ) : (
         <HomeProfileCard />
       )}

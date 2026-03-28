@@ -3,14 +3,16 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
+import type {EmploymentStatus} from "~/types/enum";
 
 interface Props {
   onClick: () => void;
   skill: string;
   position: string;
+  employment_status: EmploymentStatus;
 }
 
-const FuturePlan = ({ onClick, skill, position }: Props) => {
+const FuturePlan = ({ onClick, skill, position, employment_status }: Props) => {
   
   return (
     <Card>
@@ -25,19 +27,35 @@ const FuturePlan = ({ onClick, skill, position }: Props) => {
             </div>
           </div>
           <Button variant="ghost" size="icon" onClick={onClick}>
-            <MdEdit className="w-5 h-5" />
+            <MdEdit className="w-5 h-5"/>
           </Button>
         </div>
 
-        <Separator />
+        <Separator/>
+
+        <div className="flex justify-between items-start">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-2xl font-semibold text-primary mb-2">
+                Employment Status
+              </h3>
+              <p className="text-lg">{employment_status}</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClick}>
+            <MdEdit className="w-5 h-5"/>
+          </Button>
+        </div>
+
+        <Separator/>
 
         <div className="space-y-4">
           <h3 className="text-2xl font-semibold text-primary">Skills</h3>
           <div className="flex flex-wrap gap-2">
             {skill.split(',').map((s, index) => (
-              <Badge key={index} variant="secondary" className="text-sm">
-                {s}
-              </Badge>
+                <Badge key={index} variant="secondary" className="text-sm">
+                  {s}
+                </Badge>
             ))}
           </div>
         </div>

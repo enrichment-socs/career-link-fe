@@ -4,7 +4,7 @@ import TableLayout from "~/components/layouts/table-layout";
 import Paginator from "~/components/ui/paginator";
 import { Button } from "~/components/ui/button";
 import { exportToExcel, importExcel } from "~/lib/excel";
-import { useNavigate, useRevalidator } from "react-router";
+import {useLocation, useNavigate, useRevalidator} from "react-router";
 import { syncUser } from "../api/sync-student-data";
 import { getUsers } from "../api/get-student-data";
 import { useRef, useState, type ChangeEvent } from "react";
@@ -18,6 +18,7 @@ import { createBatchUsers, type BatchUserInput } from "../api/create-batch-users
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "~/components/ui/sheet";
 import CreateStudentData from "./create-student-data";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
+import {EmploymentStatus} from "~/types/enum";
 
 interface StudentProps {
   student: User[];
@@ -25,10 +26,14 @@ interface StudentProps {
   lastPage: number;
   search: string;
   major: string;
+  minGpa: string;
+  maxGpa: string;
+  status: string;
+  gpaSort: string;
   fetching: boolean;
 }
 
-const HomeAdmin = ({ student, cur, lastPage, search, major, fetching }: StudentProps) => {
+const HomeAdmin = ({ student, cur, lastPage, search, major, minGpa, maxGpa, status, gpaSort, fetching }: StudentProps) => {
 
   const [isLoading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -40,17 +45,20 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, fetching }: StudentP
   const revalidator = useRevalidator();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const minGpaRef = useRef<HTMLInputElement>(null);
+  const maxGpaRef = useRef<HTMLInputElement>(null);
+  const gpaSortRef = useRef<HTMLSelectElement>(null);
 
-  const buildParams = (overrides: Record<string, string>) => {
-    const params = new URLSearchParams();
-    if (search) params.set('search', search);
-    if (major) params.set('major', major);
-    params.set('page', '1');
-    Object.entries(overrides).forEach(([k, v]) => {
-      if (v) params.set(k, v);
-      else params.delete(k);
+  const statusRef = useRef<HTMLSelectElement>(null);
+
+  const buildParams = (params: Record<string, string>) => {
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) searchParams.set(key, value);
     });
-    return params.toString();
+
+    return searchParams.toString();
   };
 
   const triggerSearch = () => {
@@ -59,18 +67,35 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, fetching }: StudentP
   };
 
   const applyFilter = () => {
-    const value = majorRef.current?.value ?? '';
-    navigate(`/home?${buildParams({ major: value, page: '1' })}`);
+    const majorValue = majorRef.current?.value ?? '';
+    const minGpaValue = minGpaRef.current?.value ?? '';
+    const maxGpaValue = maxGpaRef.current?.value ?? '';
+    const gpaSortValue = gpaSortRef.current?.value ?? '';
+    const statusValue = statusRef.current?.value ?? '';
+    navigate(
+        `/home?${buildParams({
+          major: majorValue,
+          min_gpa: minGpaValue,
+          max_gpa: maxGpaValue,
+          gpa_sort: gpaSortValue,
+          status: statusValue,
+          page: '1',
+        })}`
+    );
     setFilterOpen(false);
   };
 
   const clearFilter = () => {
     if (majorRef.current) majorRef.current.value = '';
-    navigate(`/home?${buildParams({ major: '', page: '1' })}`);
+    if (minGpaRef.current) minGpaRef.current.value = '';
+    if (maxGpaRef.current) maxGpaRef.current.value = '';
+    if (gpaSortRef.current) gpaSortRef.current.value = '';
+    if (statusRef.current) statusRef.current.value = '';
+
+    navigate(`/home?page=1`);
     setFilterOpen(false);
   };
 
-  // Student data template based on User type
   const studentTemplate = [
     {
       nim: "",
@@ -78,6 +103,9 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, fetching }: StudentP
       email: "",
       phone: "",
       major: "",
+      gpa: "",
+      status: "",
+      cv: "",
       cv_file_path: ""
     }
   ];
@@ -85,7 +113,6 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, fetching }: StudentP
   const mappingStudents = async (res: BatchUserInput[]) => {
     const toastId = toast.loading("Importing students...");
     try {
-      // Convert numeric fields to strings
       const processedStudents = res.map(student => ({
         ...student,
         nim: String(student.nim || ''),
@@ -93,7 +120,10 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, fetching }: StudentP
         email: String(student.email || ''),
         name: String(student.name || ''),
         major: String(student.major || ''),
-        cv_file_path: String(student.cv_file_path || '') // Always send as string, never null
+        gpa: Number(student.gpa || 0),
+        status: String(student.status || ''),
+        cv: String(student.cv || ''),
+        cv_file_path: String(student.cv_file_path || '')
       }));
 
       await createBatchUsers(processedStudents);
@@ -207,23 +237,81 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, fetching }: StudentP
           <Popover open={filterOpen} onOpenChange={setFilterOpen}>
             <PopoverTrigger asChild>
               <Button
-                variant="outline"
-                className={`flex items-center h-12 rounded-md gap-2 p-3 border ${major ? 'border-primary text-primary' : 'border-accent text-accent'} bg-white hover:text-white transition duration-400`}
+                  variant="outline"
+                  className={`flex items-center h-12 rounded-md gap-2 p-3 border ${
+                      major || minGpa || maxGpa || status
+                          ? "border-primary text-primary"
+                          : "border-accent text-accent"
+                  } bg-white hover:text-white transition duration-400`}
               >
                 <FaFilter />
-                <span>Filter{major ? `: ${major}` : ''}</span>
+                <span>Filter</span>
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-4 flex flex-col gap-3" align="start">
-              <p className="text-sm font-medium">Filter by Major</p>
-              <input
-                ref={majorRef}
-                type="text"
-                placeholder="e.g. Computer Science"
-                defaultValue={major}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <div className="flex gap-2">
+
+            <PopoverContent className="w-72 p-4 flex flex-col gap-4" align="start">
+
+              <div className="flex flex-col gap-1">
+                <p className="text-sm font-medium">Major</p>
+                <input
+                    ref={majorRef}
+                    type="text"
+                    placeholder="e.g. Computer Science"
+                    defaultValue={major ?? ""}
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-sm font-medium">GPA</p>
+
+                <div className="flex gap-2">
+                  <input
+                      ref={minGpaRef}
+                      type="number"
+                      step="0.01"
+                      placeholder="Min"
+                      defaultValue={minGpa ?? ""}
+                      className="w-1/2 border border-gray-300 rounded-md px-2 py-2 text-sm"
+                  />
+                  <input
+                      ref={maxGpaRef}
+                      type="number"
+                      step="0.01"
+                      placeholder="Max"
+                      defaultValue={maxGpa ?? ""}
+                      className="w-1/2 border border-gray-300 rounded-md px-2 py-2 text-sm"
+                  />
+                </div>
+
+                <select
+                    ref={gpaSortRef}
+                    defaultValue={gpaSort ?? ""}
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                >
+                  <option value="">No sorting</option>
+                  <option value="asc">Ascending</option>
+                  <option value="desc">Descending</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <p className="text-sm font-medium">Employment Status</p>
+                <select
+                    ref={statusRef}
+                    defaultValue={status ?? ""}
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                >
+                  <option value="">All</option>
+                  {Object.values(EmploymentStatus).map((val) => (
+                      <option key={val} value={val}>
+                        {val}
+                      </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-2 pt-2">
                 <Button onClick={applyFilter} className="flex-1 h-9">
                   Apply
                 </Button>
@@ -231,6 +319,7 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, fetching }: StudentP
                   Clear
                 </Button>
               </div>
+
             </PopoverContent>
           </Popover>
           <Button
@@ -268,11 +357,14 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, fetching }: StudentP
             </td>
           </tr>
         ) : (
-          student.sort((a, b) => compare(a.nim ?? '', b.nim ?? '')).map(
-            (e, idx) => (
-              <StudentRow key={e.nim ?? idx} cur={cur} idx={idx} e={e} />
-            )
-          )
+            student.map((e, idx) => (
+                <StudentRow
+                    key={e.nim}
+                    cur={cur}
+                    idx={idx}
+                    e={e}
+                />
+            ))
         )}
       </TableLayout>
       <Paginator cur={cur} student={student} onPrev={onPrev} onNext={onNext} lastPage={lastPage} />

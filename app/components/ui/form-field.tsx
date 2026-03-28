@@ -10,6 +10,7 @@ interface Props<T extends FieldValues> {
     placeholder?: string,
     type?: string,
     className?: string,
+    step?:number|string
   }
 
 export default function Field<T extends FieldValues>({
@@ -18,7 +19,8 @@ export default function Field<T extends FieldValues>({
     label,
     placeholder = "",
     type = "text",
-    className
+    className,
+    step
   }: Props<T>) {
     return (
       <FormField
@@ -30,7 +32,7 @@ export default function Field<T extends FieldValues>({
             <FormControl>
               {type == 'checkbox' ?
                 <Checkbox {...field} className={className} checked={Boolean(field.value)} onCheckedChange={field.onChange} />:
-                <Input type={type} placeholder={placeholder} {...field} className={className}/>
+                <Input type={type} placeholder={placeholder} {...field} className={className} step={step}/>
               }
             </FormControl>
             <FormMessage />
