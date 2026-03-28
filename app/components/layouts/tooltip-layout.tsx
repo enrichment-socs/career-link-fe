@@ -3,7 +3,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/
 
 interface Props extends HTMLProps <HTMLDivElement> {
     children: ReactNode,
-    text: string
+    text: string|number
 }
 
 const TooltipLayout = ({children, text}:Props) => {

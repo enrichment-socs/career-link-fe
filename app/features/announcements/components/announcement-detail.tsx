@@ -19,16 +19,17 @@ import SendAnnouncement from "./send-announcement";
 import { sendAnnouncement } from "../api/send-email-announcement";
 import toast from "react-hot-toast";
 import { getUsers } from "~/features/home/api/get-student-data";
-import { getErrorMessage } from "~/lib/error";
 import { Modal } from "~/components/modal";
 import {createAnnouncementApply} from "~/features/announcements/api/create-announcement-apply";
 import {getUserApplied} from "~/features/announcements/api/get-user-applied";
+import {useNavigate} from "react-router";
 
 interface Props {
   announcement: Announcement;
 }
 
 export const AnnouncementDetail = ({ announcement }: Props) => {
+  const navigate = useNavigate()
   const {user} = useAuth()
   const [replies, setReplies] = useState<AnnouncementReply[]>([])
   const [isSend, setSend] = useState(false)
@@ -89,6 +90,7 @@ export const AnnouncementDetail = ({ announcement }: Props) => {
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8 flex flex-col gap-3">
+      <Button className={"absolute left-10"} onClick={()=> {navigate(-1)}}>Back</Button>
         <Modal onClose={() => setSend(false)} isOpen={isSend}>
           <SendAnnouncement announcement={announcement} users={users} />
         </Modal>

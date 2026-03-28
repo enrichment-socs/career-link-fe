@@ -1,4 +1,4 @@
-import type { AnnouncementType, TestType } from "./enum";
+import {type AnnouncementType, EmploymentStatus, type TestType} from "./enum";
 
 export type ApiResponse<T> = {
   message: string;
@@ -12,6 +12,9 @@ export type User = {
   email: string;
   phone: string;
   major?: string;
+  gpa: number;
+  status?: EmploymentStatus;
+  cv: string;
   enrichment_track: string;
   future_position: string;
   skill: string;

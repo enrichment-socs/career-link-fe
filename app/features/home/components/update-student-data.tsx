@@ -9,6 +9,8 @@ import { Button } from "~/components/ui/button";
 import type { User } from "~/types/api";
 import FileField from "~/components/ui/file-field";
 import { useState } from "react";
+import {EmploymentStatus} from "~/types/enum";
+import Dropdown from "~/components/ui/dropdown";
 
 interface Props {
   onSuccess: () => void;
@@ -18,6 +20,10 @@ interface Props {
 const UpdateStudentData = ({user,onSuccess}:Props) => {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [fileType, setFileType] = useState<string | null>(null);
+    const statusValues = Object.values(EmploymentStatus).map((val) => ({
+        value: val,
+        text: val,
+    }));
     const form = useForm<UpdateStudentDataInput>({
         resolver: zodResolver(updateStudentInputSchema),
         defaultValues: {
@@ -28,10 +34,14 @@ const UpdateStudentData = ({user,onSuccess}:Props) => {
             nim: user.nim,
             phone: user.phone,
             skill: user.skill ?? "",
+            cv:user.cv,
+            status: user.status,
+            gpa: user.gpa
         },
       });
     
       const onSubmit = async (data: UpdateStudentDataInput) => {
+          console.log(data)
         const toastId = toast.loading("Updating future plan...");
     
         try {
@@ -62,6 +72,9 @@ const UpdateStudentData = ({user,onSuccess}:Props) => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <Field control={form.control} placeholder="Enter here" label="Future Position" type="text" name="future_position"/>
             <Field control={form.control} placeholder="Enter here (separated by comma) ex: C,C++" label="Skill" type="text" name="skill"/>
+            <Field control={form.control} placeholder="Enter GPA" label="GPA" type="number" name="gpa" step="0.01"/>
+            <Dropdown control={form.control} label="Employment Status" name="status" values={statusValues}/>
+            <Field control={form.control} placeholder="Enter CV Link" label="Link CV" type="text" name="cv" />
             <FileField
               control={form.control}
               handlePreview={handleImagePreview}

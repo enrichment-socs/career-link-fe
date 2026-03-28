@@ -12,6 +12,7 @@ import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { useAuth } from "~/lib/auth";
+import {EmploymentStatus} from "~/types/enum";
 
 export const HomeProfileCard = () => {
   const { user, fetchUser } = useAuth();
@@ -40,6 +41,9 @@ export const HomeProfileCard = () => {
       user &&
       (user.skill == "" ||
         user.future_position == "" ||
+          user.gpa == -1 ||
+          !user.status ||
+          user.cv == "" ||
         user.cv_file_path == "")
     ) {
       setActiveModal("update");
@@ -56,6 +60,9 @@ export const HomeProfileCard = () => {
             user &&
             (user.cv_file_path == "" ||
               user.skill == "" ||
+                user.gpa == -1 ||
+                !user.status ||
+                user.cv == "" ||
               user.future_position == "")
           ) {
             return;
@@ -86,14 +93,15 @@ export const HomeProfileCard = () => {
 
             <div className="flex-1 space-y-6 w-full">
               <div className="flex items-center justify-between gap-4">
-              <div className="text-center lg:text-left">
-                <h1 className="text-4xl font-bold text-primary mb-2">
-                  {user?.name}
-                </h1>
-                <p className="text-xl text-muted-foreground">{user?.nim}</p>
-              </div>
-                <Button 
-                  variant="outline" 
+                  <div className="text-center lg:text-left">
+                      <h1 className="text-4xl font-bold text-primary mb-2">
+                          {user?.name}
+                      </h1>
+                      <p className="text-xl text-muted-foreground">{user?.nim}</p>
+                      <p className="text-large text-muted-foreground">GPA: {user?.gpa}</p>
+                  </div>
+                  <Button
+                      variant="outline"
                   onClick={() => setActiveModal("password")}
                 >
                   Change Password
@@ -186,6 +194,7 @@ export const HomeProfileCard = () => {
           onClick={() => setActiveModal("update")}
           position={user?.future_position ?? ""}
           skill={user?.skill ?? ""}
+          employment_status={user?.status ?? EmploymentStatus.NOT_EMPLOYED}
         />
       </div>
     </div>

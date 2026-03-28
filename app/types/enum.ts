@@ -19,3 +19,10 @@ export enum AnnouncementType {
     UPDATE='update',
     EVENT='event'
 }
+
+export enum EmploymentStatus {
+    NOT_EMPLOYED = "Not Employed",
+    EMPLOYED = "Employed",
+    ENTREPRENEUR = "Entrepreneur",
+    STUDY = "Continue to Study"
+}

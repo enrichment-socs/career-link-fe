@@ -8,6 +8,8 @@ import { Form } from "~/components/ui/form";
 import Field from "~/components/ui/form-field";
 import FileField from "~/components/ui/file-field";
 import { Button } from "~/components/ui/button";
+import Dropdown from "~/components/ui/dropdown";
+import {EmploymentStatus} from "~/types/enum";
 
 interface Props {
   onSuccess: () => void;
@@ -16,6 +18,10 @@ interface Props {
 const CreateStudentData = ({ onSuccess }: Props) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
+  const statusValues = Object.values(EmploymentStatus).map((val) => ({
+    value: val,
+    text: val,
+  }));
 
   const form = useForm<CreateStudentDataInput>({
     resolver: zodResolver(createStudentInputSchema),
@@ -27,6 +33,8 @@ const CreateStudentData = ({ onSuccess }: Props) => {
       phone: "",
       major: "",
       skill: "",
+      gpa:0,
+      cv:""
     },
   });
 
@@ -55,12 +63,15 @@ const CreateStudentData = ({ onSuccess }: Props) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <Field control={form.control} placeholder="Enter NIM" label="NIM" type="text" name="nim" />
-        <Field control={form.control} placeholder="Enter name" label="Name" type="text" name="name" />
-        <Field control={form.control} placeholder="Enter email" label="Email" type="email" name="email" />
-        <Field control={form.control} placeholder="Enter phone" label="Phone" type="text" name="phone" />
-        <Field control={form.control} placeholder="Enter major" label="Major" type="text" name="major" />
-        <Field control={form.control} placeholder="Enter future position" label="Future Position" type="text" name="future_position" />
-        <Field control={form.control} placeholder="Enter skills (comma separated)" label="Skill" type="text" name="skill" />
+        <Field control={form.control} placeholder="Enter Name" label="Name" type="text" name="name" />
+        <Field control={form.control} placeholder="Enter Email" label="Email" type="email" name="email" />
+        <Field control={form.control} placeholder="Enter Phone" label="Phone" type="text" name="phone" />
+        <Field control={form.control} placeholder="Enter Major" label="Major" type="text" name="major" />
+        <Field control={form.control} placeholder="Enter GPA" label="GPA" type="number" name="gpa" />
+        <Dropdown control={form.control} label="Employment Status" name="status" values={statusValues} defaultValue={EmploymentStatus.NOT_EMPLOYED}/>
+        <Field control={form.control} placeholder="Enter CV Link" label="Link CV" type="text" name="cv" />
+        <Field control={form.control} placeholder="Enter Future Position" label="Future Position" type="text" name="future_position" />
+        <Field control={form.control} placeholder="Enter Skills (comma separated)" label="Skill" type="text" name="skill" />
         <FileField control={form.control} handlePreview={handleImagePreview} label="CV (PDF)" name="cv_file" />
         {previewUrl && (
           <div className="mt-4">
