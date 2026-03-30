@@ -46,7 +46,7 @@ const SendAnnouncement = ({announcement, users}:Props) => {
     return <>
 
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(sendEmail)}>
+            <form onSubmit={form.handleSubmit(sendEmail)} className="space-y-4">
                 <Field label="Cc (separated by comma)" name="cc" control={form.control} placeholder="Insert your cc here"/>
                 <Field label="Bcc (separated by comma)" name="bcc" control={form.control} placeholder="Insert your bcc here"/>
                 <Field label="Signature" name="sender_signature" control={form.control} placeholder="Insert your signature here"/>

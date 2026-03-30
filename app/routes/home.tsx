@@ -58,7 +58,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         gpaSort || undefined,
         status || undefined
     );
-    console.log(students)
     setStudents(students)
     setMeta(meta)
     setFetching(false)

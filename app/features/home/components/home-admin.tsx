@@ -4,7 +4,7 @@ import TableLayout from "~/components/layouts/table-layout";
 import Paginator from "~/components/ui/paginator";
 import { Button } from "~/components/ui/button";
 import { exportToExcel, importExcel } from "~/lib/excel";
-import {useLocation, useNavigate, useRevalidator} from "react-router";
+import {useLocation, useNavigate, useRevalidator, useSearchParams} from "react-router";
 import { syncUser } from "../api/sync-student-data";
 import { getUsers } from "../api/get-student-data";
 import { useRef, useState, type ChangeEvent } from "react";
@@ -19,6 +19,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "~/components/ui/sh
 import CreateStudentData from "./create-student-data";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import {EmploymentStatus} from "~/types/enum";
+import Dropdown from "~/components/ui/dropdown";
+import {Dock} from "lucide-react";
 
 interface StudentProps {
   student: User[];
@@ -40,22 +42,27 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, minGpa, maxGpa, stat
   const [isDownloading, setIsDownloading] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
-  const majorRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const revalidator = useRevalidator();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const majorRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const minGpaRef = useRef<HTMLInputElement>(null);
   const maxGpaRef = useRef<HTMLInputElement>(null);
   const gpaSortRef = useRef<HTMLSelectElement>(null);
-
   const statusRef = useRef<HTMLSelectElement>(null);
 
-  const buildParams = (params: Record<string, string>) => {
-    const searchParams = new URLSearchParams();
+  const [theParams] = useSearchParams();
 
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) searchParams.set(key, value);
+  const buildParams = (overrides: Record<string, string>) => {
+    const searchParams = new URLSearchParams(theParams);
+
+    Object.entries(overrides).forEach(([key, value]) => {
+      if (value) {
+        searchParams.set(key, value);
+      } else {
+        searchParams.delete(key);
+      }
     });
 
     return searchParams.toString();
@@ -150,13 +157,23 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, minGpa, maxGpa, stat
   };
 
   const onPrev = () => {
-    if (cur == 1) return;
-    navigate(`/home?page=${cur - 1}`);
+    if (cur === 1) return;
+    const searchParams = new URLSearchParams(window.location.search);
+
+    searchParams.set("page", String(cur - 1));
+
+    navigate(`/home?${searchParams.toString()}`);
   };
+
   const onNext = () => {
-    if (lastPage == cur) return;
-    navigate(`/home?page=${cur + 1}`);
+    if (cur === lastPage) return;
+    console.log(window.location.search)
+    const searchParams = new URLSearchParams(window.location.search);
+
+    searchParams.set("page", String(cur + 1));
+    navigate(`/home?${searchParams.toString()}`);
   };
+
   const sync = () => {
     setLoading(true);
     const toastId = toast.loading("Syncing data...")
@@ -211,7 +228,7 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, minGpa, maxGpa, stat
           >
             {isDownloading ? "Downloading..." : "Download Student Data"}
           </Button>
-          <label htmlFor="student-file" className="flex text-accent border border-accent bg-white items-center h-12 rounded-md gap-2 p-3 hover:text-white hover:bg-primary transition duration-400 cursor-pointer">
+          <label htmlFor="student-file" className="flex text-sm text-accent border border-accent bg-white items-center h-12 rounded-md gap-2 p-3 hover:text-white hover:bg-primary transition duration-400 cursor-pointer">
             Import Student Data from Excel
           </label>
           <input
