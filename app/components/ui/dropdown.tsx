@@ -8,7 +8,7 @@ export interface SelectValue<TId> {
 }
 
 interface DropdownProps<T extends FieldValues, TId> {
-    control: Control<T>;
+    control?: Control<T>;
     name: FieldPath<T>;
     label: string;
     values: SelectValue<TId>[];
@@ -27,7 +27,6 @@ export default function Dropdown<T extends FieldValues>({
             control={control}
             name={name}
             render={({field}) => {
-                // 👇 sync default value into form state
                 useEffect(() => {
                     if (!field.value && defaultValue) {
                         field.onChange(defaultValue);

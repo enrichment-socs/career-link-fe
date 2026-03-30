@@ -41,7 +41,6 @@ const UpdateStudentData = ({user,onSuccess}:Props) => {
       });
     
       const onSubmit = async (data: UpdateStudentDataInput) => {
-          console.log(data)
         const toastId = toast.loading("Updating future plan...");
     
         try {
@@ -70,11 +69,11 @@ const UpdateStudentData = ({user,onSuccess}:Props) => {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <Field control={form.control} placeholder="Enter here" label="Future Position" type="text" name="future_position"/>
-            <Field control={form.control} placeholder="Enter here (separated by comma) ex: C,C++" label="Skill" type="text" name="skill"/>
             <Field control={form.control} placeholder="Enter GPA" label="GPA" type="number" name="gpa" step="0.01"/>
             <Dropdown control={form.control} label="Employment Status" name="status" values={statusValues}/>
-            <Field control={form.control} placeholder="Enter CV Link" label="Link CV" type="text" name="cv" />
+            <Field control={form.control} placeholder="Enter here" label="Future Position" type="text" name="future_position"/>
+            <Field control={form.control} placeholder="Enter here (separated by comma) ex: C,C++" label="Skill" type="text" name="skill"/>
+            <Field control={form.control} placeholder="Enter Major" label="Major" type="text" name="major" />
             <FileField
               control={form.control}
               handlePreview={handleImagePreview}
