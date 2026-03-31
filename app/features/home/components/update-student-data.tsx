@@ -7,8 +7,6 @@ import { Form } from "~/components/ui/form";
 import Field from "~/components/ui/form-field";
 import { Button } from "~/components/ui/button";
 import type { User } from "~/types/api";
-import FileField from "~/components/ui/file-field";
-import { useState } from "react";
 import {EmploymentStatus} from "~/types/enum";
 import Dropdown from "~/components/ui/dropdown";
 
@@ -18,8 +16,6 @@ interface Props {
 }
 
 const UpdateStudentData = ({user,onSuccess}:Props) => {
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [fileType, setFileType] = useState<string | null>(null);
     const statusValues = Object.values(EmploymentStatus).map((val) => ({
         value: val,
         text: val,
@@ -57,15 +53,6 @@ const UpdateStudentData = ({user,onSuccess}:Props) => {
         }
       };
 
-      const handleImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-          setPreviewUrl(URL.createObjectURL(file));
-          setFileType(file.type);
-        }
-      };
-
-
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -74,29 +61,7 @@ const UpdateStudentData = ({user,onSuccess}:Props) => {
             <Field control={form.control} placeholder="Enter here" label="Future Position" type="text" name="future_position"/>
             <Field control={form.control} placeholder="Enter here (separated by comma) ex: C,C++" label="Skill" type="text" name="skill"/>
             <Field control={form.control} placeholder="Enter Major" label="Major" type="text" name="major" />
-            <FileField
-              control={form.control}
-              handlePreview={handleImagePreview}
-              label="CV"
-              name="cv_file"
-            />
-            {previewUrl && (
-              <div className="mt-4">
-                {fileType === "application/pdf" ? (
-                  <embed
-                    src={previewUrl}
-                    type="application/pdf"
-                    className="w-full h-96 rounded-md border"
-                  />
-                ) : (
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="w-full max-h-32 object-cover rounded-md border"
-                  />
-                )}
-              </div>
-            )} 
+            <Field control={form.control} placeholder="Enter CV Link" label="CV Link" type="text" name="cv" />
             <div className="flex justify-end">
                 <Button
                     type="submit"
