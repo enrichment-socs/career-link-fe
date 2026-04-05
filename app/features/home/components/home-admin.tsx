@@ -373,6 +373,15 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, minGpa, maxGpa, stat
               Loading...
             </td>
           </tr>
+        ) : student.length === 0 ? (
+          <tr>
+            <td colSpan={10} className="py-16 text-center">
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-lg font-semibold text-gray-600">No Data Found</p>
+                <p className="text-sm text-gray-400">No students match the current filters. Please adjust your search or filter criteria.</p>
+              </div>
+            </td>
+          </tr>
         ) : (
             student.map((e, idx) => (
                 <StudentRow

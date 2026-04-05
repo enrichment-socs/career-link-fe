@@ -2,7 +2,7 @@ import { AnnouncementTag } from "~/components/announcement/announcement-tag";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { Badge } from "~/components/ui/badge";
-import { CalendarDays, Send } from "lucide-react";
+import { CalendarDays, Send, Users } from "lucide-react";
 import type { Announcement, AnnouncementReply, User } from "~/types/api";
 import CreateAnnouncementReply from "./create-announcement-reply";
 import { useAuth } from "~/lib/auth";
@@ -178,6 +178,7 @@ export const AnnouncementDetail = ({ announcement }: Props) => {
           <SendAnnouncement announcement={announcement} users={users} />
         </Modal>
       {user.name == 'admin' && (
+          <>
           <AccordionLayout text={"Blast Announcement"}>
             <div className="flex flex-col gap-1">
               <p className="text-sm font-medium">Major</p>
@@ -282,6 +283,14 @@ export const AnnouncementDetail = ({ announcement }: Props) => {
             </Button>
           </AccordionLayout>
 
+          <Button
+            onClick={() => navigate(`/announcements/${announcement.id}/applicants`)}
+            className="flex items-center gap-2"
+          >
+            <Users className="h-4 w-4" />
+            View Applicants
+          </Button>
+          </>
       )}
       <AccordionLayout text={announcement.title} defaultValue={announcement.title}>
         <Card className="w-full">

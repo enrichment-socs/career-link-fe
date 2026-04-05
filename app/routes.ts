@@ -19,6 +19,7 @@ export default [
     ...prefix("announcements", [
       index("routes/app/announcements/announcements.tsx"),
       route(":announcementId", "routes/app/announcements/announcement.tsx"),
+      route(":announcementId/applicants", "routes/app/announcements/announcement-applicants.tsx"),
     ]),
     ...prefix("certificates", [
       index("routes/app/certificates/certificates.tsx"),

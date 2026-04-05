@@ -47,7 +47,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
   const fetch = async () => {
     setFetching(true)
-    setStudents([])
     const { data: students, meta } = await getUsers(
         page,
         10,
