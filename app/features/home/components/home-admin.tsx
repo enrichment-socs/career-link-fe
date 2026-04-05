@@ -203,7 +203,7 @@ const HomeAdmin = ({ student, cur, lastPage, search, major, minGpa, maxGpa, stat
   };
 
   return (
-    <div className="container flex flex-col">
+    <div className="w-full px-6 flex flex-col">
       <h1 className="text-2xl text-primary font-bold mb-4">Student Lists</h1>
       <div className="mb-4 flex gap-2 w-full max-w-md">
         <input

@@ -6,18 +6,16 @@ import type { User } from "~/types/api";
 import {EmploymentStatus} from "~/types/enum";
 
 export const updateStudentInputSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().min(1, "Email is required"),
-  nim: z.string().min(1, "NIM is required"),
-  future_position: z.string().min(1, "Future Position is required"),
-  phone: z.string().min(1, "Phone is required"),
-  gpa: z.coerce.number().min(0).max(4).refine(val => Number.isFinite(val), "Invalid GPA"),
-  status: z.nativeEnum(EmploymentStatus, {
-    errorMap: () => ({ message: "Invalid job status value" }),
-  }),
-  cv: z.string().min(1, "CV Link is required"),
-  major: z.string().min(1, "Major is required"),
-  skill: z.string().min(1, "Skill is required"),
+  name: z.string().optional(),
+  email: z.string().optional(),
+  nim: z.string().optional(),
+  future_position: z.string().optional(),
+  phone: z.string().optional(),
+  gpa: z.coerce.number().min(0).max(4).optional(),
+  status: z.nativeEnum(EmploymentStatus).optional(),
+  cv: z.string().optional(),
+  major: z.string().optional(),
+  skill: z.string().optional(),
   cv_file: z.instanceof(File).optional(),
 });
 

@@ -27,7 +27,7 @@ const NavbarLayout = () => {
         <Sidebar className={"absolute min-h-full"} side={"left"}>
           <SidebarContent />
         </Sidebar>
-        <div className="mx-auto max-w-[1200px] w-full h-full">
+        <div className="mx-auto max-w-[1800px] w-full h-full">
           <CenterLayout>
             <Outlet />
           </CenterLayout>
