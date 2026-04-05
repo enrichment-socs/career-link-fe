@@ -17,12 +17,10 @@ const Bootcamps = () => {
 
   const [bootcamps, setBootcamps] = useState<Bootcamp[]>([])
   const {user} = useAuth()
-  
 
   useEffect(() => {
-    console.log(user)
-    getEnrollmentByUser(user?.id!).then(e => setBootcamps(e.data.map(enrollment => enrollment.bootcamp))).catch(console.log)
-  }, [user])
+    getBootcamps().then(e => setBootcamps(e.data)).catch(console.log)
+  }, [user?.id])
 
   if (!user){
     return <div className="flex flex-col items-center justify-center">

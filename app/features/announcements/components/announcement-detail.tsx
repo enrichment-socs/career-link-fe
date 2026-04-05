@@ -311,7 +311,7 @@ export const AnnouncementDetail = ({ announcement }: Props) => {
             {announcement.image_path ? (
                 <div className="w-full aspect-video rounded-lg overflow-hidden bg-muted">
                   <img
-                      src={`${import.meta.env.VITE_STORAGE_URL}/${announcement.image_path}`}
+                      src={`${import.meta.env.VITE_STORAGE_URL}${announcement.image_path}`}
                       alt={announcement.title}
                       className="w-full h-full object-cover"
                   />

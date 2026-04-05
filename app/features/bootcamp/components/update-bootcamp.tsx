@@ -56,7 +56,7 @@ export const UpdateBootcamp = ({
 
   async function createFile() {
     let response = await fetch(
-      `${import.meta.env.VITE_STORAGE_URL}/${bootcamp.image_path}`
+      `${import.meta.env.VITE_STORAGE_URL}${bootcamp.image_path}`
     );
     let data = await response.blob();
     let metadata = {

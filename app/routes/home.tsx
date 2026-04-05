@@ -66,7 +66,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     if (user && user.name == 'admin') {
       fetch()
     }
-  }, [user, loaderData])
+  }, [user?.id, loaderData])
 
 
   if (!user) {

@@ -30,9 +30,7 @@ export const BootcampCard = ({
           <div className="flex gap-6">
             <div className="flex-shrink-0">
               <img
-                src={`${import.meta.env.VITE_STORAGE_URL}/${
-                  bootcamp.image_path
-                }`}
+                src={`${import.meta.env.VITE_STORAGE_URL}${bootcamp.image_path}`}
                 alt={bootcamp.name}
                 className="w-full h-24 object-cover rounded-lg border"
               />
@@ -96,7 +94,7 @@ export const BootcampCard = ({
     <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md pt-0 pb-8">
       <div className="relative">
         <img
-          src={`${import.meta.env.VITE_STORAGE_URL}/${bootcamp.image_path}`}
+          src={`${import.meta.env.VITE_STORAGE_URL}${bootcamp.image_path}`}
           alt={bootcamp.name}
           className="h-36 w-full object-cover group-hover:scale-105 transition-transform duration-300"
         />

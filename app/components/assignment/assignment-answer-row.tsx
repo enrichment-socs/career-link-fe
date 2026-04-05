@@ -73,7 +73,7 @@ const AssignmentAnswerRow = ({assignment_id, user,answerFilePath, result}: Props
             <TableCell className="w-1/4 text-center flex justify-center">
                 {
                     answerFilePath ? 
-                    <a href={`${import.meta.env.VITE_STORAGE_URL}/${answerFilePath}`}>
+                    <a href={`${import.meta.env.VITE_STORAGE_URL}${answerFilePath}`}>
                     <Download />
                     </a> : 
                     <span className="text-gray-500">No answer submitted</span>

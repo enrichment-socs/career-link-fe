@@ -31,7 +31,7 @@ const BootcampDetailCard = ({
       <div className="flex flex-col bg-white p-6 rounded-xl">
         <div className={"flex gap-8"}>
           <img
-            src={`${import.meta.env.VITE_STORAGE_URL}/${image}`}
+            src={`${import.meta.env.VITE_STORAGE_URL}${image}`}
             alt="bootcamp's image"
             className="rounded-lg border w-80 object-cover"
           />
