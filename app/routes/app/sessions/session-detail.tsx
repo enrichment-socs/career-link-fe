@@ -59,29 +59,38 @@ const Session = ({loaderData}:Route.ComponentProps) => {
         try {
             const { data: session } = await getBootcampSession(loaderData.session);
             setSession(session)
-            
-            const {data: myAttendances} = await getAttendanceByUserAndSession(session.id, user?.id!)
-            setAttendances(myAttendances)
 
-            const { data: tests } = await getSessionTest(session.id);
+            const [
+                {data: myAttendances},
+                {data: tests},
+                {data: sessionData},
+                {data: evaluationQuestions},
+                assignmentResult
+            ] = await Promise.all([
+                getAttendanceByUserAndSession(session.id, user?.id!),
+                getSessionTest(session.id),
+                getSessionDataBySession(session.id),
+                getEvaluationQuestionBySession(loaderData.session),
+                getAssignment(session.id).catch(() => ({data: undefined}))
+            ])
+
+            setAttendances(myAttendances)
+            setSessionData(sessionData)
+            setEvaluationQuestions(evaluationQuestions)
+            setAssignment(assignmentResult.data)
+
             const preTest = tests.filter(e => e.type == TestType.PRE_TEST)[0]
             const postTest = tests.filter(e => e.type == TestType.POST_TEST)[0]
             setPretest(preTest)
             setPosttest(postTest)
 
-            const { data: assignment } = await getAssignment(session.id).catch(() => ({data: undefined}))
-            setAssignment(assignment)
+            const [pretestResult, posttestResult] = await Promise.all([
+                preTest ? getStudentAttemptByTest(preTest.id, user?.id!) : Promise.resolve({data: [] as StudentScore[]}),
+                postTest ? getStudentAttemptByTest(postTest.id, user?.id!) : Promise.resolve({data: [] as StudentScore[]})
+            ])
 
-            const { data: sessionData } = await getSessionDataBySession(session.id)
-            setSessionData(sessionData)
-
-            const {data: evaluationQuestions} = await getEvaluationQuestionBySession(loaderData.session)
-            setEvaluationQuestions(evaluationQuestions)
-
-            const {data: pretestAttempts} = await getStudentAttemptByTest(preTest ? preTest.id:"", user?.id!)
-            setAttemptPretest(pretestAttempts)
-            const {data: posttestAttempts} = await getStudentAttemptByTest(postTest ? postTest.id:"", user?.id!)
-            setAttemptPosttest(posttestAttempts)
+            setAttemptPretest(pretestResult.data)
+            setAttemptPosttest(posttestResult.data)
 
         } catch (e) {
             console.error(e);

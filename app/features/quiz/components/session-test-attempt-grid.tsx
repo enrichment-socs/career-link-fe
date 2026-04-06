@@ -7,6 +7,7 @@ import { createStudentAnswer } from "../api/answer/create-student-answer";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "~/lib/error";
 import { useAuth } from "~/lib/auth";
+import { Modal } from "~/components/modal";
 
 interface Props {
   questions: Question[];
@@ -19,6 +20,7 @@ const SessionTestAttemptGrid = ({ questions, attemptId, onFinish }: Props) => {
     questions.map((_) => false)
   );
   const [answers, setAnswers] = useState<string[]>(questions.map((_) => ""));
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const [idx, setIdx] = useState(0);
   const { user } = useAuth();
@@ -52,20 +54,22 @@ const SessionTestAttemptGrid = ({ questions, attemptId, onFinish }: Props) => {
   };
 
   const finish = async () => {
-    //save all answers
-    console.log(questions);
-    console.log(answers);
+    setShowConfirmModal(false);
     const toastId = toast.loading("Submitting...");
     try {
+      const answeredPairs = answers
+        .map((option, i) => ({ option, question: questions[i] }))
+        .filter((pair) => pair.option !== "");
+
       await Promise.all(
-        answers.map(
-          async (option, idx) =>
+        answeredPairs.map(
+          async (pair) =>
             await createStudentAnswer({
               data: {
                 attempt_id: attemptId,
-                question_id: questions[idx].id,
+                question_id: pair.question.id,
                 user_id: user?.id!,
-                option_id: option,
+                option_id: pair.option,
               },
             })
         )
@@ -78,8 +82,42 @@ const SessionTestAttemptGrid = ({ questions, attemptId, onFinish }: Props) => {
     }
   };
 
+  const unansweredCount = answers.filter((a) => a === "").length;
+
   return (
     <>
+      <Modal
+        title="Finish Attempt"
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+      >
+        <div className="flex flex-col gap-4">
+          {unansweredCount > 0 ? (
+            <p className="text-center text-gray-600">
+              You have <span className="font-bold text-red-500">{unansweredCount}</span> unanswered
+              question{unansweredCount > 1 ? "s" : ""}. Are you sure you want to submit?
+            </p>
+          ) : (
+            <p className="text-center text-gray-600">
+              Are you sure you want to submit your answers? This action cannot be undone.
+            </p>
+          )}
+          <div className="flex gap-3 justify-center">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="text-white"
+              onClick={finish}
+            >
+              Confirm Submit
+            </Button>
+          </div>
+        </div>
+      </Modal>
       {questions[idx] ? (
         <>
           <div className="flex flex-1 flex-col bg-white shadow rounded-md p-7 gap-3 h-fit">
@@ -104,7 +142,7 @@ const SessionTestAttemptGrid = ({ questions, attemptId, onFinish }: Props) => {
             </div>
             <Button
               className="text-white hover:bg-white hover:text-black hover:border hover:border-black"
-              onClick={finish}
+              onClick={() => setShowConfirmModal(true)}
             >
               Finish Attempt
             </Button>

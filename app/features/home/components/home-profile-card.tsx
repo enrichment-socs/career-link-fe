@@ -193,6 +193,9 @@ export const HomeProfileCard = () => {
           position={user?.future_position ?? ""}
           skill={user?.skill ?? ""}
           employment_status={user?.status ?? EmploymentStatus.NOT_EMPLOYED}
+          company_name={user?.company_name ?? ""}
+          business_type={user?.business_type ?? ""}
+          university_name={user?.university_name ?? ""}
         />
       </div>
     </div>

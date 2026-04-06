@@ -15,8 +15,8 @@ import { DeleteAnnouncement } from "~/features/announcements/components/delete-a
 import EmptyMessage from "~/components/ui/empty-message";
 import { useAuth } from "~/lib/auth";
 import { getErrorMessage } from "~/lib/error";
-import { getUsers } from "~/features/home/api/get-student-data";
 import PageSpinner from "~/components/ui/page-spinner";
+import { getUserAppliedBatch } from "~/features/announcements/api/get-user-applied-batch";
 
 const Announcements = ({ loaderData }: Route.ComponentProps) => {
   const { role } = useRole();
@@ -24,12 +24,17 @@ const Announcements = ({ loaderData }: Route.ComponentProps) => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [announcementsData, setAnnouncementsData] = useState<Announcement[]>([])
+  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true);
 
   const fetchAnnouncements = async () => {
     try {
-      let {data: announcementsData} = await getAnnouncements()
-      setAnnouncementsData(announcementsData)
+      const [announcementsRes, appliedRes] = await Promise.all([
+        getAnnouncements(),
+        user ? getUserAppliedBatch(user.id) : Promise.resolve({data: [] as string[]})
+      ])
+      setAnnouncementsData(announcementsRes.data)
+      setAppliedIds(new Set(appliedRes.data))
     } catch (error) {
       console.log(getErrorMessage(error))
     } finally {
@@ -105,7 +110,7 @@ const Announcements = ({ loaderData }: Route.ComponentProps) => {
       )}
 
       {/* Announcements List */}
-      <AnnouncementLists announcements={announcementsData} onSelect={onSelect}/>
+      <AnnouncementLists announcements={announcementsData} onSelect={onSelect} appliedIds={appliedIds}/>
     </NavbarContentLayout>
   );
 };

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Trash2, Eye, Download } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useRevalidator } from "react-router";
 import toast from "react-hot-toast";
 import TooltipLayout from "~/components/layouts/tooltip-layout";
@@ -22,8 +22,6 @@ const StudentRow = ({ idx, cur, e }: Props) => {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const revalidator = useRevalidator();
 
-  const isExternalCv = e.cv_file_path?.startsWith("http") ?? false;
-
   const handleDelete = async () => {
     const toastId = toast.loading("Deleting student...");
     try {
@@ -36,94 +34,87 @@ const StudentRow = ({ idx, cur, e }: Props) => {
     }
   };
 
-  const cvUrl = e.cv_file_path
-    ? (e.cv_file_path.startsWith("http") ? e.cv_file_path : `${import.meta.env.VITE_STORAGE_URL}${e.cv_file_path}`)
-    : null;
-
   return (
-    <TableRow className="shadow-md p-5 border-box bg-white rounded-lg items-center my-2 flex w-full">
-      <TableCell className="w-[3%] font-medium text-center">
+    <TableRow className="shadow-md p-5 border-box bg-white rounded-lg items-center my-2 flex w-full text-xs">
+      <TableCell className="w-[2%] font-medium text-center">
         {idx + (cur - 1) * 10 + 1}
       </TableCell>
 
-      <TableCell className="w-[10%] text-center">{e?.nim ?? "-"}</TableCell>
+      <TableCell className="w-[6%] text-center truncate">{e?.nim ?? "-"}</TableCell>
 
-      <TableCell className="w-[12%] text-center whitespace-normal break-words">
-        {e?.name ?? "-"}
+      <TableCell className="w-[8%] text-center truncate">
+        <TooltipLayout text={e?.name ?? "-"}>
+          <p>{e?.name ?? "-"}</p>
+        </TooltipLayout>
       </TableCell>
 
-      <TableCell className="w-[17%] text-center">
+      <TableCell className="w-[10%] text-center truncate">
         <TooltipLayout text={e?.email ?? "no email"}>
           <p>{e?.email ? e.email : "-"}</p>
         </TooltipLayout>
       </TableCell>
 
-      {/*<TableCell className="w-[12%] text-center">*/}
-      {/*  {e?.phone ? e.phone.replace("+62", "0") : "-"}*/}
-      {/*</TableCell>*/}
+      <TableCell className="w-[7%] text-center truncate">
+        <TooltipLayout text={e?.phone ?? "no phone"}>
+          <p>{e?.phone ? e.phone.replace("+62", "0") : "-"}</p>
+        </TooltipLayout>
+      </TableCell>
 
-      <TableCell className="w-[8%] text-center whitespace-normal break-words">
+      <TableCell className="w-[6%] text-center truncate">
         <TooltipLayout text={e?.major ?? "no major yet"}>
           <p>{e?.major ? e.major : "-"}</p>
         </TooltipLayout>
       </TableCell>
 
-        <TableCell className="w-[8%] text-center whitespace-normal break-words">
-            <TooltipLayout text={e?.gpa ?? "no gpa yet"}>
-                <p>{e?.gpa ? e.gpa : "-"}</p>
-            </TooltipLayout>
-        </TableCell>
+      <TableCell className="w-[3%] text-center truncate">
+        <TooltipLayout text={e?.gpa ?? "no gpa yet"}>
+          <p>{e?.gpa ? e.gpa : "-"}</p>
+        </TooltipLayout>
+      </TableCell>
 
-        <TableCell className="w-[8%] text-center whitespace-normal break-words">
-            <TooltipLayout text={e?.status ?? "no status yet"}>
-                <p>{e?.status ? e.status : "-"}</p>
-            </TooltipLayout>
-        </TableCell>
+      <TableCell className="w-[7%] text-center truncate">
+        <TooltipLayout text={e?.status ?? "no status yet"}>
+          <p>{e?.status ? e.status : "-"}</p>
+        </TooltipLayout>
+      </TableCell>
 
-      <TableCell className="w-[9%] text-center whitespace-normal break-words">
-        <TooltipLayout text={e?.future_position ?? "no future position yet"}>
+      <TableCell className="w-[7%] text-center truncate">
+        <TooltipLayout text={e?.future_position ?? "no position yet"}>
           <p>{e?.future_position ? e.future_position : "-"}</p>
         </TooltipLayout>
       </TableCell>
 
-      <TableCell className="w-[7%] text-center whitespace-normal break-words">
+      <TableCell className="w-[5%] text-center truncate">
         <TooltipLayout text={e?.skill ?? "no skill yet"}>
           <p>{e?.skill ? e.skill : "-"}</p>
         </TooltipLayout>
       </TableCell>
 
-        <TableCell className="w-[7%] text-center whitespace-normal break-words">
-            <TooltipLayout text={e?.skill ?? "no cv yet"}>
-                <p>{e?.cv ? e.cv : "-"}</p>
-            </TooltipLayout>
-        </TableCell>
+      <TableCell className="w-[5%] text-center truncate">
+        <TooltipLayout text={e?.cv ?? "no cv yet"}>
+          <p>{e?.cv ? e.cv : "-"}</p>
+        </TooltipLayout>
+      </TableCell>
 
-      {/*<TableCell className="w-[6%] text-center">*/}
-      {/*  {cvUrl ? (*/}
-      {/*    <div className="flex gap-1 justify-center">*/}
-      {/*      {isExternalCv ? (*/}
-      {/*        <Button variant="outline" size="icon" asChild>*/}
-      {/*          <a href={cvUrl} target="_blank" rel="noreferrer">*/}
-      {/*            <Eye className="h-4 w-4" />*/}
-      {/*          </a>*/}
-      {/*        </Button>*/}
-      {/*      ) : (*/}
-      {/*        <Button variant="outline" size="icon" onClick={() => window.open(cvUrl, "_blank")}>*/}
-      {/*          <Eye className="h-4 w-4" />*/}
-      {/*        </Button>*/}
-      {/*      )}*/}
-      {/*      <Button variant="outline" size="icon" asChild>*/}
-      {/*        <a href={cvUrl} download target="_blank" rel="noreferrer">*/}
-      {/*          <Download className="h-4 w-4" />*/}
-      {/*        </a>*/}
-      {/*      </Button>*/}
-      {/*    </div>*/}
-      {/*  ) : (*/}
-      {/*    <span className="text-muted-foreground text-xs">-</span>*/}
-      {/*  )}*/}
-      {/*</TableCell>*/}
+      <TableCell className="w-[7%] text-center truncate">
+        <TooltipLayout text={e?.company_name ?? "-"}>
+          <p>{e?.company_name ? e.company_name : "-"}</p>
+        </TooltipLayout>
+      </TableCell>
 
-      <TableCell className="w-[16%] flex gap-1 justify-center items-center">
+      <TableCell className="w-[7%] text-center truncate">
+        <TooltipLayout text={e?.business_type ?? "-"}>
+          <p>{e?.business_type ? e.business_type : "-"}</p>
+        </TooltipLayout>
+      </TableCell>
+
+      <TableCell className="w-[8%] text-center truncate">
+        <TooltipLayout text={e?.university_name ?? "-"}>
+          <p>{e?.university_name ? e.university_name : "-"}</p>
+        </TooltipLayout>
+      </TableCell>
+
+      <TableCell className="w-[12%] flex gap-1 justify-center items-center">
         {confirmDelete ? (
           <div className="flex gap-1 items-center">
             <span className="text-xs text-red-600 whitespace-nowrap">Delete?</span>

@@ -17,6 +17,9 @@ export const updateStudentInputSchema = z.object({
   major: z.string().optional(),
   skill: z.string().optional(),
   cv_file: z.instanceof(File).optional(),
+  company_name: z.string().optional(),
+  business_type: z.string().optional(),
+  university_name: z.string().optional(),
 });
 
 export type UpdateStudentDataInput = z.infer<typeof updateStudentInputSchema>;

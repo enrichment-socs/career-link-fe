@@ -13,7 +13,7 @@ import { Button } from "~/components/ui/button"
 import { exportToExcel } from "~/lib/excel"
 import { type Enrollment, type StudentAttempt, type SessionTest, type StudentScore } from "~/types/api"
 import { getEnrollmentByBootcamp } from "~/features/enrollments/api/get-enrollment-by-bootcamp"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import PageSpinner from "~/components/ui/page-spinner"
 
 
@@ -27,50 +27,77 @@ const SessionTestResults = ({loaderData}:Route.ComponentProps) => {
     const [test, setTest] = useState<SessionTest>()
     const [attempts, setAttempts] = useState<StudentScore[]>([])
     const [loading, setLoading] = useState(true)
+    const [highestOnly, setHighestOnly] = useState(true)
 
-    const fetchTest = async () => {
-        const {data: test} = await getTest(loaderData.test).catch(() => ({data: null}))
-        if (test){
-            setTest(test)
+    const displayedAttempts = useMemo(() => {
+        if (!highestOnly) return attempts
+        const bestMap = new Map<string, StudentScore>()
+        for (const score of attempts) {
+            const existing = bestMap.get(score.user_id)
+            if (!existing || score.score > existing.score) {
+                bestMap.set(score.user_id, score)
+            }
         }
-        setLoading(false)
-    }
+        return Array.from(bestMap.values())
+    }, [attempts, highestOnly])
 
-    const fetchAttempts= async () => {
-        if (test){
-            const {data: attempts} = await getAllStudentAttemptByTest(loaderData.test).catch(() => ({data: []}))
-            const {data: enrollments} = await getEnrollmentByBootcamp(loaderData.bootcamp).catch(() => ({data: []}))
+    const fetchAll = async () => {
+        try {
+            const [
+                {data: test},
+                {data: attempts},
+                {data: enrollments}
+            ] = await Promise.all([
+                getTest(loaderData.test).catch(() => ({data: null as SessionTest | null})),
+                getAllStudentAttemptByTest(loaderData.test).catch(() => ({data: [] as StudentScore[]})),
+                getEnrollmentByBootcamp(loaderData.bootcamp).catch(() => ({data: [] as Enrollment[]}))
+            ])
 
-            setAttempts(enrollments.map(enroll => {
-                let studentAttempts = attempts.filter(e => e.user_id == enroll.user_id)
-                let maxScore = Math.max(...studentAttempts.map(e => e.score), 0)
-                let studentBestAttempt = studentAttempts.filter(e => e.score == maxScore)[0]
-                
-                return studentBestAttempt?studentBestAttempt:{
-                    user: enroll.user,
-                    user_id: enroll.user_id,
-                    score: 0,
-                    attempt: undefined,
-                    attempt_id: "",
-                    id: "",
-                } as StudentScore
-            }))
+            if (test) setTest(test)
+
+            const usersWithScores = new Set(attempts.map(a => a.user_id))
+
+            const allAttempts: StudentScore[] = [...attempts]
+
+            for (const enroll of enrollments) {
+                if (!usersWithScores.has(enroll.user_id)) {
+                    allAttempts.push({
+                        user: enroll.user,
+                        user_id: enroll.user_id,
+                        score: 0,
+                        attempt: undefined,
+                        attempt_id: "",
+                        id: "",
+                    } as StudentScore)
+                }
+            }
+
+            allAttempts.sort((a, b) => {
+                const nameCompare = a.user.name.localeCompare(b.user.name)
+                if (nameCompare !== 0) return nameCompare
+                if (!a.attempt) return 1
+                if (!b.attempt) return -1
+                return new Date(a.attempt.done_at).getTime() - new Date(b.attempt.done_at).getTime()
+            })
+
+            setAttempts(allAttempts)
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setLoading(false)
         }
     }
 
     useEffect(() => {
-        fetchTest()
+        fetchAll()
     }, [])
 
-    useEffect(() => {
-        fetchAttempts()
-    }, [test])
-
     const exportResult = () => {
-        exportToExcel(`${test?.title}-result`, attempts.map(e => (
+        exportToExcel(`${test?.title}-result`, displayedAttempts.map((e) => (
             {
                 nim: e.user.nim,
                 name: e.user.name,
+                attempt: e.attempt ? displayedAttempts.filter(a => a.user_id === e.user_id).indexOf(e) + 1 : "-",
                 doneAt: e.attempt? e.attempt.done_at: "-",
                 score: Math.ceil(e.score),
                 status: (e.score >= test!.minimum_score)? "Passed":"Not passed",
@@ -92,20 +119,34 @@ const SessionTestResults = ({loaderData}:Route.ComponentProps) => {
                 <h2 className={'font-bold text-left w-full text-4xl text-slate-700 p-6 h-full'}>Test Result</h2>
             </div>
             {test && <TestInformationCard test={test}/>}
-            <Button onClick={exportResult} className="w-1/6">Export</Button>
-            <TableLayout header={<DefaultTableHeader columns={["NIM", "Name", "Done at", "Score", "Status"]}/>}>
+            <div className="flex items-center justify-between">
+                <Button onClick={exportResult} className="w-1/6">Export</Button>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                        type="checkbox"
+                        checked={highestOnly}
+                        onChange={(e) => setHighestOnly(e.target.checked)}
+                        className="w-4 h-4 accent-accent cursor-pointer"
+                    />
+                    <span className="text-sm text-gray-700">Show highest score only</span>
+                </label>
+            </div>
+            <TableLayout header={<DefaultTableHeader columns={["NIM", "Name", "Attempt", "Done at", "Score", "Status"]}/>}>
                 {
-                attempts.length < 1?
+                displayedAttempts.length < 1?
                 <EmptyMessage title="No attempts." text="The students hasn't made any attempts yet."/>:
-                attempts.map(e => 
-                    <TableRow className="flex w-full border-b-1 border-gray-200">
-                        <TableCell className="w-1/5 text-center">{e.user.nim ?? "-"}</TableCell>
-                        <TableCell className="w-1/5 text-center">{e.user.name}</TableCell>
-                        <TableCell className="w-1/5 text-center">{
+                displayedAttempts.map((e, idx) => 
+                    <TableRow key={e.id || `enroll-${e.user_id}`} className="flex w-full border-b-1 border-gray-200">
+                        <TableCell className="w-1/6 text-center">{e.user.nim ?? "-"}</TableCell>
+                        <TableCell className="w-1/6 text-center">{e.user.name}</TableCell>
+                        <TableCell className="w-1/6 text-center">{
+                            e.attempt ? displayedAttempts.filter(a => a.user_id === e.user_id).indexOf(e) + 1 : "-"
+                        }</TableCell>
+                        <TableCell className="w-1/6 text-center">{
                             e.attempt? format(new Date(e.attempt.done_at), "MM/dd/yyyy HH:mm:ss"):'-'
                         }</TableCell>
-                        <TableCell className="w-1/5 text-center">{Math.ceil(e.score)}</TableCell>
-                        <TableCell className="w-1/5 text-center">{(e.score >= test!.minimum_score)?"Passed":"Not passed"}</TableCell>
+                        <TableCell className="w-1/6 text-center">{Math.ceil(e.score)}</TableCell>
+                        <TableCell className="w-1/6 text-center">{(e.score >= test!.minimum_score)?"Passed":"Not passed"}</TableCell>
                     </TableRow>
                 )
                 }

@@ -22,9 +22,9 @@ const NavbarLayout = () => {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col min-h-screen w-full box-border bg-gray-50">
+    <div className="flex flex-col h-screen w-full box-border bg-gray-50 overflow-hidden">
       <Navbar />
-      <div className="flex-grow relative min-h-screen w-full box-border">
+      <div className="flex-1 relative w-full box-border overflow-y-auto">
         <Sidebar className={"absolute min-h-full"} side={"left"}>
           <SidebarContent />
         </Sidebar>

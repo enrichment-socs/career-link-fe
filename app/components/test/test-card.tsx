@@ -149,7 +149,7 @@ const TestCard = ({ sessionId, testType, test, attempts }: Props) => {
                       Take Test
                     </Button>
                     :
-                    <Link to={`test/${test.id}/attempt/${attempts[attempts.length - 1]?.id}`}>
+                    <Link to={`test/${test.id}/attempt/${attempts[attempts.length - 1]?.attempt_id}`}>
                       <Button className={"p-2 w-40 bg-purple-600 hover:bg-purple-500"}>Continue Test</Button>
                     </Link>
                   }

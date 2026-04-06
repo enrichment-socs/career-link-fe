@@ -34,9 +34,14 @@ const CreateStudentData = ({ onSuccess }: Props) => {
       major: "",
       skill: "",
       gpa:0,
-      cv:""
+      cv:"",
+      company_name: "",
+      business_type: "",
+      university_name: ""
     },
   });
+
+  const watchedStatus = form.watch("status");
 
   const onSubmit = async (data: CreateStudentDataInput) => {
     const toastId = toast.loading("Creating student...");
@@ -70,7 +75,16 @@ const CreateStudentData = ({ onSuccess }: Props) => {
         <Field control={form.control} placeholder="Enter GPA" label="GPA" type="number" name="gpa" />
         <Dropdown control={form.control} label="Employment Status" name="status" values={statusValues} defaultValue={EmploymentStatus.NOT_EMPLOYED}/>
         <Field control={form.control} placeholder="Enter CV Link" label="Link CV" type="text" name="cv" />
-        <Field control={form.control} placeholder="Enter Future Position" label="Future Position" type="text" name="future_position" />
+        <Field control={form.control} placeholder={watchedStatus === EmploymentStatus.ENTREPRENEUR ? "e.g. CEO, Founder, Business Owner" : "e.g. Software Engineer, Data Analyst"} label={watchedStatus === EmploymentStatus.EMPLOYED ? "Position" : "Future Position"} type="text" name="future_position" />
+        {watchedStatus === EmploymentStatus.EMPLOYED && (
+          <Field control={form.control} placeholder="e.g. Google, Tokopedia, BCA" label="Company Name" type="text" name="company_name" />
+        )}
+        {watchedStatus === EmploymentStatus.ENTREPRENEUR && (
+          <Field control={form.control} placeholder="e.g. F&B, E-Commerce, SaaS, Consulting" label="Business Type" type="text" name="business_type" />
+        )}
+        {watchedStatus === EmploymentStatus.STUDY && (
+          <Field control={form.control} placeholder="e.g. Universitas Indonesia, NUS, MIT" label="University / Institution" type="text" name="university_name" />
+        )}
         <Field control={form.control} placeholder="Enter Skills (comma separated)" label="Skill" type="text" name="skill" />
         <FileField control={form.control} handlePreview={handleImagePreview} label="CV (PDF)" name="cv_file" />
         {previewUrl && (

@@ -30,9 +30,15 @@ const AssignmentAnswers = ({loaderData}:Route.ComponentProps) => {
     
     const fetchData = async () => {
         try {
-            const {data: answers} = await getAssignmentAnswerByAssignment(assignment).catch(() => ({data: []}))
-            const {data: results} = await getAssignmentResultByAssignment(assignment).catch(() => ({data: []}))
-            const {data: enrollments} = await getEnrollmentByBootcamp(bootcamp).catch(() => ({data: []}));
+            const [
+                {data: answers},
+                {data: results},
+                {data: enrollments}
+            ] = await Promise.all([
+                getAssignmentAnswerByAssignment(assignment).catch(() => ({data: [] as AssignmentAnswer[]})),
+                getAssignmentResultByAssignment(assignment).catch(() => ({data: [] as AssignmentResult[]})),
+                getEnrollmentByBootcamp(bootcamp).catch(() => ({data: [] as Enrollment[]}))
+            ])
 
             setAnswers(answers.reduce((acc, item) => {
                 acc[item.user_id] = item;

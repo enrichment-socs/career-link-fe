@@ -39,8 +39,13 @@ const Attendances = ({loaderData}:Route.ComponentProps) => {
     
     const fetchAttendances =async () => {
         try {
-            const {data: attendances} = await getAttendanceBySession(loaderData.session)
-            const {data: session} = await getBootcampSession(loaderData.session)
+            const [
+                {data: attendances},
+                {data: session}
+            ] = await Promise.all([
+                getAttendanceBySession(loaderData.session),
+                getBootcampSession(loaderData.session)
+            ])
             setAttendances(attendances)
             setSession(session)
         } catch (e) {

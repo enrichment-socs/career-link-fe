@@ -26,9 +26,15 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
 
     const fetchBootcamp = async () => {
         try {
-            const { data: bootcamp } = await getBootcamp(loaderData.id);
-            const {data: certificates} = await getCertificateByBootcamp(loaderData.id)
-            const {data: enrollments} = await getBootcampReportByBootcampId(loaderData.id)
+            const [
+                {data: bootcamp},
+                {data: certificates},
+                {data: enrollments}
+            ] = await Promise.all([
+                getBootcamp(loaderData.id),
+                getCertificateByBootcamp(loaderData.id),
+                getBootcampReportByBootcampId(loaderData.id)
+            ])
 
             setCertificates(certificates.map(e => e.user_id))
             setSessionCount(bootcamp.sessions.length)

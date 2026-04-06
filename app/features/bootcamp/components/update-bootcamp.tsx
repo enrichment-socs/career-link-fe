@@ -7,7 +7,7 @@ import { getErrorMessage } from "~/lib/error";
 import Field from "~/components/ui/form-field";
 import TextAreaField from "~/components/ui/text-area-field";
 import FileField from "~/components/ui/file-field";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import SelectField from "~/components/ui/select-field";
 import type {
   Bootcamp,
@@ -52,21 +52,6 @@ export const UpdateBootcamp = ({
       short_name: bootcamp.short_name,
       about_this_bootcamp: bootcamp.about_this_bootcamp,
     },
-  });
-
-  async function createFile() {
-    let response = await fetch(
-      `${import.meta.env.VITE_STORAGE_URL}${bootcamp.image_path}`
-    );
-    let data = await response.blob();
-    let metadata = {
-      type: "image/jpeg",
-    };
-    const file = new File([data], previewUrl ?? "image.jpeg", metadata);
-  }
-
-  useEffect(() => {
-    createFile();
   });
 
   const onSubmit = async (data: UpdateBootcampInput) => {

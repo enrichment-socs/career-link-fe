@@ -27,6 +27,9 @@ export type User = {
   job_start_date: string;
   job_end_date: string;
   cv_file_path: string;
+  company_name?: string;
+  business_type?: string;
+  university_name?: string;
 };
 
 export type Announcement = {

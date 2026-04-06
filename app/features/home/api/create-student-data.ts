@@ -17,6 +17,9 @@ export const createStudentInputSchema = z.object({
   major: z.string().min(1, "Major is required"),
   skill: z.string().min(1, "Skill is required"),
   cv_file: z.instanceof(File).optional(),
+  company_name: z.string().optional(),
+  business_type: z.string().optional(),
+  university_name: z.string().optional(),
 });
 
 export type CreateStudentDataInput = z.infer<typeof createStudentInputSchema>;

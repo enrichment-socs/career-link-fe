@@ -10,45 +10,21 @@ import type { ModalType } from "~/components/modal";
 import { sendAnnouncement } from "../api/send-email-announcement";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "~/lib/error";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {useAuth} from "~/lib/auth";
-import {updateAnnouncementReply} from "~/features/announcements/api/update-announcement-reply";
-import {createAnnouncementReply} from "~/features/announcements/api/create-announcement-reply";
 import {createAnnouncementApply} from "~/features/announcements/api/create-announcement-apply";
-import {getUserApplied} from "~/features/announcements/api/get-user-applied";
 
 interface AnnouncementCardProps {
   announcement: Announcement;
   onSelect: (e:Announcement, type:ModalType) => void;
-
+  initialApplied?: boolean;
 }
 
-export const AnnouncementCard = ({ announcement, onSelect }: AnnouncementCardProps) => {
+export const AnnouncementCard = ({ announcement, onSelect, initialApplied = false }: AnnouncementCardProps) => {
   const { role } = useRole();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [isApplied, setIsApplied] = useState<boolean>(false)
-
-    useEffect(() => {
-        const getAnnouncementStatus = async () => {
-            if(user){
-                try {
-                    let response = false
-                    if (user){
-                        response = await getUserApplied({user_id: user.id, announcement_id: announcement.id})
-                    }
-                    setIsApplied(response)
-                } catch (error) {
-                    console.log(error)
-                    setIsApplied(false)
-                }
-            }else{
-                setIsApplied(false)
-            }
-        }
-
-        getAnnouncementStatus()
-    }, [announcement]);
+  const [isApplied, setIsApplied] = useState<boolean>(initialApplied)
 
   const applyJob = async () => {
       const toastId = toast.loading("Sending applications...")

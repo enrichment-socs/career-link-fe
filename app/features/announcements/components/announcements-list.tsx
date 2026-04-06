@@ -6,9 +6,10 @@ import type { ModalType } from "~/components/modal";
 interface AnnouncementListProps {
   announcements: Announcement[];
   onSelect: (e:Announcement, type:ModalType) => void;
+  appliedIds?: Set<string>;
 }
 
-export const AnnouncementLists = ({ announcements, onSelect }: AnnouncementListProps) => {
+export const AnnouncementLists = ({ announcements, onSelect, appliedIds }: AnnouncementListProps) => {
   if (announcements.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -26,7 +27,7 @@ export const AnnouncementLists = ({ announcements, onSelect }: AnnouncementListP
   return (
     <div className="space-y-4">
       {announcements.map((announcement) => (
-        <AnnouncementCard key={announcement.id} announcement={announcement} onSelect={onSelect} />
+        <AnnouncementCard key={announcement.id} announcement={announcement} onSelect={onSelect} initialApplied={appliedIds?.has(announcement.id)} />
       ))}
     </div>
   );

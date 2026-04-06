@@ -64,18 +64,33 @@ const Bootcamps = () => {
 
   const fetchBootcamps = async () => {
     try {
-      const {data: bootcamps} = await getBootcamps()
-      const {data: bootcampTypes} = await getBootcampTypes()
-      const {data: bootcampCategories} = await getBootcampCategories()
-      const {data: users} = await getUsers(1, 10000)
+      const [
+        {data: bootcamps},
+        {data: bootcampTypes},
+        {data: bootcampCategories},
+      ] = await Promise.all([
+        getBootcamps(),
+        getBootcampTypes(),
+        getBootcampCategories(),
+      ])
       setBootcampTypes(bootcampTypes)
       setCategories(bootcampCategories)
       setBootcamps(bootcamps)
-      setUsers(users)
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  }
+
+  const fetchUsersIfNeeded = async () => {
+    if (users.length === 0) {
+      try {
+        const {data: usersData} = await getUsers(1, 10000);
+        setUsers(usersData);
+      } catch (e) {
+        console.error(e);
+      }
     }
   }
 
@@ -150,7 +165,7 @@ const Bootcamps = () => {
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex gap-3 flex-1">
                   <Button
-                    onClick={() => setActiveModal("create")}
+                    onClick={async () => { await fetchUsersIfNeeded(); setActiveModal("create"); }}
                     className="gap-2"
                   >
                     <Plus className="h-4 w-4" />

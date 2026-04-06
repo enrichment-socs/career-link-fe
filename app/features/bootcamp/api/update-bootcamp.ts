@@ -18,9 +18,9 @@ export const updateBootcampInputSchema = z.object({
         "image/gif",
       ].includes(file.type),
     { message: "Invalid image file type" }
-  ),
-  short_name: z.string(),
-  about_this_bootcamp: z.string()
+  ).optional(),
+  short_name: z.string().min(1, "Short name is required"),
+  about_this_bootcamp: z.string().min(1, "About this bootcamp is required")
 });
 
 export type UpdateBootcampInput = z.infer<typeof updateBootcampInputSchema>;
@@ -34,9 +34,12 @@ export const updateBootcamp = ({
 }): Promise<{ message: string }> => {
 
   let formData = new FormData();
-  
-    for ( let key in data ) {
-        formData.append(key, data[key]);
+
+    for (let key in data) {
+      const value = data[key as keyof UpdateBootcampInput];
+      if (value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
     }
     return api.post(`/bootcamp/${bootcampId}`, formData, {
       headers: {
