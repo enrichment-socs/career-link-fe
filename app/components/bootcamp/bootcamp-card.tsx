@@ -91,7 +91,7 @@ export const BootcampCard = ({
   }
 
   return (
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md pt-0 pb-8">
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md pt-0 pb-8 h-full">
       <div className="relative">
         <img
           src={`${import.meta.env.VITE_STORAGE_URL}${bootcamp.image_path}`}
@@ -122,7 +122,7 @@ export const BootcampCard = ({
         )}
       </div>
 
-      <CardContent className="space-y-4">
+      <CardContent className="flex-1 flex flex-col justify-between space-y-4">
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-gray-800 line-clamp-2 group-hover:text-primary transition-colors">
             {bootcamp.name}

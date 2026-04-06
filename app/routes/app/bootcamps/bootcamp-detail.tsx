@@ -1,14 +1,12 @@
 import BootcampDetailCard from "~/components/bootcamp/bootcamp-detail-card";
 import { getBootcamp } from "~/features/bootcamp/api/get-bootcamp";
 import type { Route } from "./+types/bootcamp-detail";
-import { getBootcampCategory } from "~/features/bootcamp-category/api/get-bootcamp-category";
-import { getBootcampType } from "~/features/bootcamp-type/api/get-bootcamp-type";
 import { Modal, type ModalType } from "~/components/modal";
 import { useRevalidator } from "react-router";
 import { useEffect, useState } from "react";
 import { CreateUpdateSession } from "~/features/session/components/create-session";
 import SessionsGrid from "~/features/session/components/sessions-grid";
-import { type Bootcamp, type BootcampCategory, type BootcampType, type Session } from "~/types/api";
+import { type Bootcamp, type Session } from "~/types/api";
 import { DeleteSession } from "~/features/session/components/delete-session";
 
 export const loader = async ({ params }: Route.LoaderArgs) => {
@@ -20,25 +18,19 @@ const BootcampDetail = ({ loaderData }: Route.ComponentProps) => {
   const revalidator = useRevalidator();
   const [selectedSession, setSelectedSession] = useState<Session>();
   const [bootcamp, setBootcamp] = useState<Bootcamp>()
-  const [bootcampType, setBootcampType] = useState<BootcampType>()
-  const [bootcampCategory, setBootcampCategory] = useState<BootcampCategory>()
-
 
   const fetchBootcamp = async () => {
-      const { data: bootcamp } = await getBootcamp(loaderData.id);
-      const { data: category } = await getBootcampCategory(bootcamp.category_id);
-      const { data: type } = await getBootcampType(bootcamp.type_id);
-
-
-      setBootcamp(bootcamp)
-      setBootcampCategory(category)
-      setBootcampType(type)
-  }
+    try {
+      const { data } = await getBootcamp(loaderData.id);
+      setBootcamp(data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     fetchBootcamp()
-  }, [])  
-
+  }, [loaderData.id])
 
   const onUpdateSession = (session: Session) => {
     setSelectedSession(session);
@@ -52,10 +44,10 @@ const BootcampDetail = ({ loaderData }: Route.ComponentProps) => {
 
   const onSuccess = () => {
     setActiveModal(null);
-    revalidator.revalidate();
+    fetchBootcamp();
   };
 
-  if (!bootcamp || !bootcampCategory || !bootcampType){
+  if (!bootcamp || !bootcamp.category || !bootcamp.type){
     return null
   }
 
@@ -91,8 +83,8 @@ const BootcampDetail = ({ loaderData }: Route.ComponentProps) => {
           id={bootcamp.id}
           name={bootcamp.name}
           description={bootcamp.description}
-          category={bootcampCategory}
-          type={bootcampType}
+          category={bootcamp.category}
+          type={bootcamp.type}
           image={bootcamp.image_path}
           onClick={() => setActiveModal("create")}
         />
