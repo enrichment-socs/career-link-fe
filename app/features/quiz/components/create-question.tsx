@@ -45,12 +45,12 @@ const CreateQuestion = ({sessionTestId, number, question, onDelete, onSuccess}:P
           await updateTestQuestion({ data, id: question.id }):
           await createTestQuestion({ data });
 
-          for (let i = 0;i < data.options.length;i++){
-                data.options[i].question_id = res.data.id
-                question ? 
-                await updateQuestionOption({data: data.options[i], id: question.options[i].id}): 
-                await createQuestionOption({data: data.options[i]})
-          }  
+          await Promise.all(data.options.map((opt, i) => {
+                opt.question_id = res.data.id
+                return question ? 
+                    updateQuestionOption({data: opt, id: question.options[i].id}): 
+                    createQuestionOption({data: opt})
+          }))
           toast.success(res.message, { id: toastId })
           onSuccess()
         } catch (error) {

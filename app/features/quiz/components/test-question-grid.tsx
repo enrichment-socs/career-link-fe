@@ -79,10 +79,10 @@ const TestQuestionGrid = ({questions, id, activeModal, onCreate, onConfirmDelete
             await Promise.all(importedQuestions.map(async (data) => {
                 const res = await createTestQuestion({ data });
 
-                for (let i = 0;i < data.options.length;i++){
-                    data.options[i].question_id = res.data.id
-                    await createQuestionOption({data: data.options[i]})
-                }  
+                await Promise.all(data.options.map((opt, i) => {
+                    opt.question_id = res.data.id
+                    return createQuestionOption({data: opt})
+                }))
             }))
             toast.success("Import Test Success!", { id: toastId })
             onSuccess()
