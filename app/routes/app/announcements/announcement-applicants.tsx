@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { CiSearch } from "react-icons/ci";
 import { useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
@@ -25,6 +26,17 @@ export default function AnnouncementApplicants({ loaderData }: Route.ComponentPr
   const [announcement, setAnnouncement] = useState<Announcement>();
   const [applicants, setApplicants] = useState<AnnouncementApplicant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredApplicants = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    if (!term) return applicants;
+    return applicants.filter((a) =>
+      (a.user?.nim ?? "").toLowerCase().includes(term) ||
+      (a.user?.name ?? "").toLowerCase().includes(term) ||
+      (a.user?.email ?? "").toLowerCase().includes(term)
+    );
+  }, [applicants, searchTerm]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -74,8 +86,20 @@ export default function AnnouncementApplicants({ loaderData }: Route.ComponentPr
         </div>
       </div>
 
-      <div className="mb-4 text-sm text-gray-600">
-        Total Applicants: {applicants.length}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center border bg-white px-3 py-2 rounded-md flex-1 max-w-sm">
+          <CiSearch className="text-gray-500 text-xl" />
+          <input
+            type="text"
+            placeholder="Search by NIM, name, or email..."
+            className="bg-transparent outline-none px-2 py-1 text-gray-600 w-full text-sm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <span className="text-sm text-gray-600">
+          {searchTerm ? `Showing ${filteredApplicants.length} of ${applicants.length}` : `Total Applicants: ${applicants.length}`}
+        </span>
       </div>
 
       <Table className="mt-2">
@@ -108,7 +132,7 @@ export default function AnnouncementApplicants({ loaderData }: Route.ComponentPr
               </td>
             </tr>
           ) : (
-            applicants.map((applicant, idx) => (
+            filteredApplicants.map((applicant, idx) => (
               <TableRow
                 key={applicant.id}
                 className="shadow-md p-5 border-box bg-white rounded-lg items-center my-2 flex w-full"

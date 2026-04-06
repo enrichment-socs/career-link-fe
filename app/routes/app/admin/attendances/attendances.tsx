@@ -11,8 +11,9 @@ import { format } from "date-fns"
 import { getBootcampSession } from "~/features/session/api/get-session"
 import { exportToExcel } from "~/lib/excel"
 import { type Session, type Attendance } from "~/types/api"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import PageSpinner from "~/components/ui/page-spinner"
+import { CiSearch } from "react-icons/ci"
 
 export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
 
@@ -36,6 +37,7 @@ const Attendances = ({loaderData}:Route.ComponentProps) => {
     const [attendances, setAttendances] = useState<Attendance[]>([])
     const [session, setSession] = useState<Session>()
     const [loading, setLoading] = useState(true)
+    const [searchTerm, setSearchTerm] = useState("")
     
     const fetchAttendances =async () => {
         try {
@@ -99,13 +101,29 @@ const Attendances = ({loaderData}:Route.ComponentProps) => {
                 </Link>
                 <h2 className={'font-bold text-left w-full text-4xl text-slate-700 p-6 h-full'}>Session {session.session_number} Attendances</h2>
             </div>
-            <Button onClick={exportResult} className="w-1/6">Export</Button>
+            <div className="flex items-center gap-3">
+                <div className="flex items-center border bg-white px-3 py-2 rounded-md flex-1 max-w-sm">
+                    <CiSearch className="text-gray-500 text-xl" />
+                    <input
+                        type="text"
+                        placeholder="Search by NIM or name..."
+                        className="bg-transparent outline-none px-2 py-1 text-gray-600 w-full text-sm"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <Button onClick={exportResult} className="w-1/6">Export</Button>
+            </div>
             
             <TableLayout header={<DefaultTableHeader columns={["NIM", "Name", "Clock in", "Clock out"]}/>}>
                 {
                 attendances.length < 1?
                 <EmptyMessage title="No Attendances" text="The students hasn't attend yet."/>:
-                transform(attendances).map(e => 
+                transform(attendances).filter(e => {
+                    const term = searchTerm.toLowerCase()
+                    if (!term) return true
+                    return e.nim.toLowerCase().includes(term) || e.name.toLowerCase().includes(term)
+                }).map(e => 
                     <TableRow className="flex w-full border-b-1 border-gray-200">
                         <TableCell className="w-1/4 text-center">{e.nim ?? "-"}</TableCell>
                         <TableCell className="w-1/4 text-center">{e.name}</TableCell>

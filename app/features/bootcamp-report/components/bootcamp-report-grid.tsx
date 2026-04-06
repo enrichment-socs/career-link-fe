@@ -5,7 +5,8 @@ import { compare } from "~/lib/utils"
 import type { Certificate, Enrollment, StudentAttempt } from "~/types/api"
 import StudentReportRow from "./student-report-row"
 import { Button } from "~/components/ui/button"
-import { useState } from "react"
+import { useState, useMemo } from "react"
+import { CiSearch } from "react-icons/ci"
 import { AssignmentResultType, CertificateType, TestType } from "~/types/enum"
 import toast from "react-hot-toast"
 import { createCertificate } from "~/features/certificates/api/create-certificate"
@@ -55,6 +56,16 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates}:Pro
     const [selected, setSelected] = useState<string[]>(enrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? '')).map(_ => ""))
     const [progress, setProgress] = useState(0)
     const [isEligible, _] = useState(enrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? '')).map(e => validateEligibility(e, session)))
+    const [searchTerm, setSearchTerm] = useState("")
+
+    const filteredEnrollments = useMemo(() => {
+        const term = searchTerm.toLowerCase()
+        if (!term) return enrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? ''))
+        return enrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? '')).filter((e) =>
+            (e.user.nim ?? "").toLowerCase().includes(term) ||
+            e.user.name.toLowerCase().includes(term)
+        )
+    }, [enrollments, searchTerm])
 
     const onSelect = (e: Enrollment, idx:number) => {
         setSelected(selected.map((val, index) => {
@@ -146,6 +157,16 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates}:Pro
             enrollments.length < 1 ? <EmptyMessage text="There is no enrolled student here" title="No Enrolled Student"/>:
             <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-4">
+                    <div className="flex items-center border bg-white px-3 py-2 rounded-md flex-1 max-w-sm">
+                        <CiSearch className="text-gray-500 text-xl" />
+                        <input
+                            type="text"
+                            placeholder="Search by NIM or name..."
+                            className="bg-transparent outline-none px-2 py-1 text-gray-600 w-full text-sm"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                     <Button onClick={exportResult} variant={'success'}>Export to Excel</Button>
                     <Button onClick={selectAll} variant={'accent'}>Select All</Button>
                     <Button onClick={generateAll}>Generate</Button>
@@ -155,7 +176,7 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates}:Pro
                 <TableLayout
                     header = {<ReportDataTableHeader />}
                 >
-                    {enrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? '')).map(
+                    {filteredEnrollments.map(
                     (e, idx) => (
                         <StudentReportRow hasCertificate={certificates.includes(e.user_id)} cur={1} idx={idx} e={e} sessionCount={session} onSelect={onSelect} isSelected={selected[idx] != ""} isEligible={isEligible[idx]}/>
                     )

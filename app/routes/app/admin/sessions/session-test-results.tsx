@@ -15,6 +15,7 @@ import { type Enrollment, type StudentAttempt, type SessionTest, type StudentSco
 import { getEnrollmentByBootcamp } from "~/features/enrollments/api/get-enrollment-by-bootcamp"
 import { useEffect, useMemo, useState } from "react"
 import PageSpinner from "~/components/ui/page-spinner"
+import { CiSearch } from "react-icons/ci"
 
 
 
@@ -28,6 +29,7 @@ const SessionTestResults = ({loaderData}:Route.ComponentProps) => {
     const [attempts, setAttempts] = useState<StudentScore[]>([])
     const [loading, setLoading] = useState(true)
     const [highestOnly, setHighestOnly] = useState(true)
+    const [searchTerm, setSearchTerm] = useState("")
 
     const displayedAttempts = useMemo(() => {
         if (!highestOnly) return attempts
@@ -38,8 +40,15 @@ const SessionTestResults = ({loaderData}:Route.ComponentProps) => {
                 bestMap.set(score.user_id, score)
             }
         }
-        return Array.from(bestMap.values())
-    }, [attempts, highestOnly])
+        return Array.from(bestMap.values()).filter((s) => {
+            const term = searchTerm.toLowerCase()
+            if (!term) return true
+            return (
+                s.user.name.toLowerCase().includes(term) ||
+                (s.user.nim ?? "").toLowerCase().includes(term)
+            )
+        })
+    }, [attempts, highestOnly, searchTerm])
 
     const fetchAll = async () => {
         try {
@@ -119,7 +128,17 @@ const SessionTestResults = ({loaderData}:Route.ComponentProps) => {
                 <h2 className={'font-bold text-left w-full text-4xl text-slate-700 p-6 h-full'}>Test Result</h2>
             </div>
             {test && <TestInformationCard test={test}/>}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <div className="flex items-center border bg-white px-3 py-2 rounded-md flex-1 max-w-sm">
+                    <CiSearch className="text-gray-500 text-xl" />
+                    <input
+                        type="text"
+                        placeholder="Search by NIM or name..."
+                        className="bg-transparent outline-none px-2 py-1 text-gray-600 w-full text-sm"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
                 <Button onClick={exportResult} className="w-1/6">Export</Button>
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input

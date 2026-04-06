@@ -1,4 +1,5 @@
-import { useRef, useState, type ChangeEvent } from "react"
+import { useRef, useState, useMemo, type ChangeEvent } from "react"
+import { CiSearch } from "react-icons/ci"
 import { Button } from "~/components/ui/button"
 import EmptyMessage from "~/components/ui/empty-message"
 import { exportToExcel, importExcel } from "~/lib/excel"
@@ -27,6 +28,17 @@ const EnrollmentGrid = ({enrollments, bootcampId}:Props) => {
     const revalidator = useRevalidator()
     const [progress, setProgress] = useState(0)
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [searchTerm, setSearchTerm] = useState("")
+
+    const filteredEnrollments = useMemo(() => {
+        const term = searchTerm.toLowerCase()
+        if (!term) return enrollments
+        return enrollments.filter((e) =>
+            (e.user.nim ?? "").toLowerCase().includes(term) ||
+            e.user.name.toLowerCase().includes(term) ||
+            (e.user.email ?? "").toLowerCase().includes(term)
+        )
+    }, [enrollments, searchTerm])
     
     const template: Template[] = [
         {
@@ -60,7 +72,17 @@ const EnrollmentGrid = ({enrollments, bootcampId}:Props) => {
 
     return (
         <>
-            <div className="flex gap-5 w-full">
+            <div className="flex gap-3 w-full items-center">
+                <div className="flex items-center border bg-white px-3 py-2 rounded-md flex-1 max-w-sm">
+                    <CiSearch className="text-gray-500 text-xl" />
+                    <input
+                        type="text"
+                        placeholder="Search by NIM, name, or email..."
+                        className="bg-transparent outline-none px-2 py-1 text-gray-600 w-full text-sm"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
                 <Button className="bg-purple-500 hover:bg-purple-400" onClick={() => exportToExcel('enrolled-students', template)}>
                     Download Excel Template
                 </Button>
@@ -75,7 +97,7 @@ const EnrollmentGrid = ({enrollments, bootcampId}:Props) => {
                 <TableLayout
                     header = {<MasterDataTableHeader />}
                 >
-                    {enrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? '')).map(
+                    {filteredEnrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? '')).map(
                     (e, idx) => (
                         <StudentRow cur={1} idx={idx} e={e.user}/>
                     )

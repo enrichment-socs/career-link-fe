@@ -1,4 +1,5 @@
-import { useRef, useState, type ChangeEvent } from "react";
+import { useRef, useState, useMemo, type ChangeEvent } from "react";
+import { CiSearch } from "react-icons/ci";
 import toast from "react-hot-toast";
 import { useRevalidator } from "react-router";
 import { exportToExcel, importExcel } from "~/lib/excel";
@@ -32,6 +33,16 @@ const AssignmentAnswerGrid = ({assignment, enrollments, results, answers}:Props)
     const revalidator = useRevalidator();
     const [progress, setProgress] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const filteredEnrollments = useMemo(() => {
+        const term = searchTerm.toLowerCase();
+        if (!term) return enrollments;
+        return enrollments.filter((e) =>
+            (e.user.nim ?? "").toLowerCase().includes(term) ||
+            e.user.name.toLowerCase().includes(term)
+        );
+    }, [enrollments, searchTerm]);
     
 
     const mappingGrade=  async (res:Template[]) => {
@@ -87,6 +98,16 @@ const AssignmentAnswerGrid = ({assignment, enrollments, results, answers}:Props)
     return (
         <>
             <div className="flex gap-3">
+                <div className="flex items-center border bg-white px-3 py-2 rounded-md flex-1 max-w-sm">
+                    <CiSearch className="text-gray-500 text-xl" />
+                    <input
+                        type="text"
+                        placeholder="Search by NIM or name..."
+                        className="bg-transparent outline-none px-2 py-1 text-gray-600 w-full text-sm"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
                 <Button onClick={() => exportGrading('result')} className="w-1/5 bg-slate-600 hover:bg-slate-500">Export</Button>
                 <Button className="w-1/5 bg-orange-600 hover:bg-orange-500" onClick={() => exportGrading('template')}>Download Grading Template</Button>
                 <label htmlFor="file" className="bg-green-600 hover:bg-green-500 px-2 w-1/5 rounded-md text-white text-sm font-medium flex items-center justify-center">
@@ -99,7 +120,7 @@ const AssignmentAnswerGrid = ({assignment, enrollments, results, answers}:Props)
                 {
                 enrollments.length < 1?
                 <EmptyMessage title="No Student" text="There is no students yet."/>:
-                enrollments.map(e => 
+                filteredEnrollments.map(e => 
                     <AssignmentAnswerRow 
                         user={e.user}
                         assignment_id={assignment}
