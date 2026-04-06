@@ -10,6 +10,7 @@ import { getErrorMessage } from "~/lib/error"
 import { updateEvalQuestion, type UpdateEvalQuestionInput } from "~/features/evaluation/api/update-evaluation-question"
 import { deleteEvaluationQuestion } from "~/features/evaluation/api/delete-evaluation-question"
 import { useState } from "react"
+import { Textarea } from "../ui/textarea"
 
 interface Props {
     idx: number,
@@ -25,21 +26,22 @@ const EvaluationCard = ({idx, question, onSuccess}:Props) => {
         defaultValues: question
     })
 
+    const watchedType = form.watch("type")
+
     let types = [
         {
             value: "ratio",
-            text: "ratio"
+            text: "Ratio"
         },
         {
             value: "text",
-            text: "text"
+            text: "Text"
         }
     ]
 
     const handleSubmit = async (data: UpdateEvalQuestionInput) => {
         const toastId = toast.loading(`Updating evaluation question...`);
         try {
-            console.log(data)
             await updateEvalQuestion({
                 data,
                 id: question.id,
@@ -59,13 +61,11 @@ const EvaluationCard = ({idx, question, onSuccess}:Props) => {
         const toastId = toast.loading(`Deleting evaluation question...`);
 
         try {
-            // console.log(question.question)
             await deleteEvaluationQuestion(question.id)
             toast.success("Delete evaluation question success", { id: toastId })
             
             onSuccess()
         } catch (error) {
-            console.log('error delete')
             toast.error(getErrorMessage(error), {
             id: toastId,
             });
@@ -94,10 +94,24 @@ const EvaluationCard = ({idx, question, onSuccess}:Props) => {
                                     <Field control={form.control} label="" name="question" placeholder="Question" />
                                 }
                             </div>
-                            <div className="w-1/5 flex justify-center items-center ">
+                            <div className="w-1/5 flex justify-center items-center">
                                 <SelectField control={form.control} label="" name="type" values={types}/>
                             </div>
-
+                        </div>
+                        <div className="w-full px-2">
+                            <p className="text-xs text-slate-400 mb-2">Preview</p>
+                            {watchedType === "ratio" ? (
+                                <div className="flex justify-between w-full">
+                                    {Array.from({ length: 5 }, (_, index) => (
+                                        <div key={index} className="flex gap-2 flex-col items-center">
+                                            <h4 className="text-slate-400 text-sm font-bold">{index + 1}</h4>
+                                            <input type="radio" disabled name={`preview-${idx}`} className="accent-primary opacity-50" />
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <Textarea disabled placeholder="Student will type their answer here..." className="resize-none opacity-50 text-sm" />
+                            )}
                         </div>
                         <div className="flex w-full gap-5 justify-end">
                             <Button className="w-1/5">Update</Button>

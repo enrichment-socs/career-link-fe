@@ -7,6 +7,13 @@ import { createEvalQuestion } from "../api/create-evaluation-question"
 import { Progress } from "~/components/ui/progress"
 import type { EvaluationQuestion } from "~/types/api"
 import EvaluationCard from "~/components/evaluation/question-admin-card"
+import EmptyMessage from "~/components/ui/empty-message"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { createEvalQuestionInputSchema, type CreateEvalQuestionInput } from "../api/create-evaluation-question"
+import { Form } from "~/components/ui/form"
+import Field from "~/components/ui/form-field"
+import SelectField from "~/components/ui/select-field"
 
 
 interface Template {
@@ -29,7 +36,32 @@ const EvaluationAdminGrid = ({sessionId, id, onSuccess, questions}: Props) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [progress, setProgress] = useState(0)
 
-    
+    const form = useForm<CreateEvalQuestionInput>({
+        resolver: zodResolver(createEvalQuestionInputSchema),
+        defaultValues: {
+            question: "",
+            session_id: sessionId,
+            type: "ratio"
+        }
+    })
+
+    const typeValues = [
+        { value: "ratio", text: "Ratio" },
+        { value: "text", text: "Text" }
+    ]
+
+    const handleCreate = async (data: CreateEvalQuestionInput) => {
+        const toastId = toast.loading("Adding evaluation question...")
+        try {
+            await createEvalQuestion({ data })
+            toast.success("Question added successfully", { id: toastId })
+            form.reset({ question: "", session_id: sessionId, type: "ratio" })
+            onSuccess()
+        } catch (error) {
+            toast.error(getErrorMessage(error), { id: toastId })
+        }
+    }
+
     const template: Template[]  = [{
         number: 1,
         question: "Rate your satisfaction on this bootcamp session",
@@ -76,26 +108,40 @@ const EvaluationAdminGrid = ({sessionId, id, onSuccess, questions}: Props) => {
                 <div className="w-3/5 p-2">
                     {progress > 0 && <Progress value={progress} className="w-full"/>}
                     <div className="flex flex-col gap-5">
-                        {
-                            questions.map((e,idx) => <>
-                                <EvaluationCard onSuccess={onSuccess} idx={idx} question={e} />
-                            </>)
-                        }
-                            <div className="flex flex-col gap-5">
-                                {questions.map(e => <div>{e.question}</div>)}
-                            </div>
-                        
+                        {questions.length === 0 ? (
+                            <EmptyMessage title="No Evaluation Questions" text="There are no evaluation questions for this session yet. Add one manually or import from Excel." />
+                        ) : (
+                            questions.map((e, idx) => (
+                                <EvaluationCard key={e.id} onSuccess={onSuccess} idx={idx} question={e} />
+                            ))
+                        )}
                     </div>
                 </div>
-                <div className="flex grid grid-cols-2 gap-5 w-2/5 bg-white rounded-lg shadow-md p-5">
-                    
-                    <Button onClick={() => exportToExcel('template', template)} className="bg-purple-500 hover:bg-purple-400">
-                        Download Template
-                    </Button>
-                    <label htmlFor="file" className="bg-green-600 hover:bg-green-500 px-2 text-sm rounded-md text-white flex items-center justify-center">
-                        Import Evaluation
-                    </label>
-                    <input type="file" name="" id="file" ref={fileInputRef} hidden onChange={importEval}/>
+                <div className="flex flex-col gap-5 w-2/5">
+                    <div className="bg-white rounded-lg shadow-md p-5">
+                        <h3 className="text-lg font-semibold text-primary mb-4">Add Question</h3>
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(handleCreate)} className="flex flex-col gap-4">
+                                <Field control={form.control} label="Question" name="question" placeholder="e.g. Rate your satisfaction on this session" type="text" />
+                                <SelectField control={form.control} label="Type" name="type" values={typeValues} />
+                                <Button type="submit" disabled={form.formState.isSubmitting} className={form.formState.isSubmitting ? "opacity-70 cursor-not-allowed" : ""}>
+                                    {form.formState.isSubmitting ? "Adding..." : "+ Add Question"}
+                                </Button>
+                            </form>
+                        </Form>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-md p-5">
+                        <h3 className="text-lg font-semibold text-primary mb-4">Import from Excel</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Button onClick={() => exportToExcel('template', template)} className="bg-purple-500 hover:bg-purple-400">
+                                Download Template
+                            </Button>
+                            <label htmlFor="file" className="bg-green-600 hover:bg-green-500 px-2 text-sm rounded-md text-white flex items-center justify-center cursor-pointer">
+                                Import Evaluation
+                            </label>
+                            <input type="file" name="" id="file" ref={fileInputRef} hidden onChange={importEval}/>
+                        </div>
+                    </div>
                 </div>
             </div>
         </>

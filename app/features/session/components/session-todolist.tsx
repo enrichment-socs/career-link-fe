@@ -16,6 +16,8 @@ import {
   isClockInOpen,
   isClockInRange,
   isClockOutOpen,
+  hasClockedIn,
+  hasClockedOut,
 } from "~/lib/validation";
 import { useRole } from "~/provider/role-testing-provider";
 import type {
@@ -103,8 +105,8 @@ const SessionTodolist = ({
     <>
       <div className={"flex flex-col gap-y-4 mb-8"}>
         {role == "user" ? (
-          ((isClockInOpen(session) && isClockInRange(session)) ||
-            isClockOutOpen(session)) && (
+          ((isClockInOpen(session) && isClockInRange(session) && !hasClockedIn(attendances)) ||
+            (isClockOutOpen(session) && hasClockedIn(attendances) && !hasClockedOut(attendances))) && (
             <Button onClick={attendanceOnClick} className="cursor-pointer py-6">
               Session Clock In / Clock Out
             </Button>

@@ -20,6 +20,7 @@ import toast from "react-hot-toast";
 import { getErrorMessage } from "~/lib/error";
 import { createStudentAttendance } from "~/features/attendance/api/create-attendance";
 import { getAttendanceByUserAndSession } from "~/features/attendance/api/get-attendance-by-user-and-session";
+import { hasClockedIn, hasClockedOut } from "~/lib/validation";
 import { format } from "date-fns";
 import { getEvaluationQuestionBySession } from "~/features/evaluation/api/get-evaluation-question-by-session";
 import type { Route } from "./+types/session-detail";
@@ -115,19 +116,20 @@ const Session = ({loaderData}:Route.ComponentProps) => {
 
 
     const takeAttendance = async () => {
+        const type = hasClockedIn(attendances) ? 'clock_out' : 'clock_in' as const;
         const toastId = toast.loading("Submitting Attendance...");
             try {
                 
                 const res = await createStudentAttendance({
                     data: {
-                        attendance_type: attendances.length < 1?'clock_in':'clock_out',
+                        attendance_type: type,
                         session_id: session.id,
                         user_id: user?.id!
                     }
                 })
                 setAttendances([...attendances, {
                     id: res.data.id,
-                    attendance_type: attendances.length < 1?'clock_in':'clock_out',
+                    attendance_type: type,
                     session_id: session.id,
                     user: user!,
                     finished_at: new Date()
@@ -179,7 +181,7 @@ const Session = ({loaderData}:Route.ComponentProps) => {
                 className="w-full mt-5"
                 onClick={takeAttendance}
             >
-                Clock {attendances.length > 0? "Out":"In"}
+                Clock {hasClockedIn(attendances) ? "Out" : "In"}
             </Button>
         </Modal>
         <div className={'flex flex-col w-full gap-y-4'}>

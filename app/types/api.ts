@@ -195,6 +195,7 @@ export type AuthResponse = {
 export type EvaluationQuestion = {
   id: string;
   question: string;
+  session_id: string;
   type: string;
 }
 

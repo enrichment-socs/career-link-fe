@@ -30,13 +30,13 @@ const SessionCard = ({session}:Props) => {
             description: session.description,
             session_number: ""+session.session_number,
             bootcamp_id: session.bootcamp.id,
-            start_attendance_date: session.start_attendance_date,
-            end_date: session.end_date,
+            start_attendance_date: new Date(session.start_attendance_date),
+            end_date: new Date(session.end_date),
         },
       })
 
     function handleChangeDate(name:string, date: Date | undefined) {
-        const realName = name as "start_attendance_date"
+        const realName = name as "start_attendance_date" | "end_date";
           if (date) {
             form.setValue(realName, date);
           }
