@@ -1,6 +1,6 @@
 import type { Config } from "@react-router/dev/config";
 
 export default {
-  ssr: false,
+  ssr: true,
   basename: "/career-link/",
 } satisfies Config;
