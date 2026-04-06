@@ -11,7 +11,7 @@ import type { Question } from "~/types/api";
 import { useAuth } from "~/lib/auth";
 import PageSpinner from "~/components/ui/page-spinner";
 
-export const loader = async ({ params }:Route.LoaderArgs) => {
+export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
 
     
     return {bootcampId: params.bootcamp, sessionId: params.session, testId: params.test, attemptId: params.attempt}

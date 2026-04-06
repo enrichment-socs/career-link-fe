@@ -16,7 +16,7 @@ export function meta({ }: Route.MetaArgs) {
   ];
 }
 
-export const loader = async ({ request }: { request: Request }) => {
+export const clientLoader = async ({ request }: { request: Request }) => {
 
   const url = new URL(request.url);
   return { url }

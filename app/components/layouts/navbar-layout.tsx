@@ -17,9 +17,22 @@ const NavbarLayout = () => {
     }
   }, [loading, user]);
 
-  if (loading) return <PageSpinner />;
+  if (!loading && !user) return null;
 
-  if (!user) return null;
+  if (loading) {
+    return (
+      <div className="flex flex-col h-screen w-full box-border bg-gray-50 overflow-hidden">
+        <div className="w-full bg-primary flex items-center justify-between px-3 py-3">
+          <div className="flex items-center">
+            <h2 className="font-semibold text-white text-3xl mx-10">CareerLink</h2>
+          </div>
+        </div>
+        <div className="flex-1">
+          <PageSpinner />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen w-full box-border bg-gray-50 overflow-hidden">

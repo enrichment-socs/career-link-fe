@@ -6,7 +6,7 @@ import type { Route } from "./+types/bootcamps";
 import { getBootcamps } from "~/features/bootcamp/api/get-bootcamps";
 import { getBootcampTypes } from "~/features/bootcamp-type/api/get-bootcamp-types";
 import { getBootcampCategories } from "~/features/bootcamp-category/api/get-bootcamp-categories";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Bootcamp } from "~/types/api";
 import { getEnrollmentByUser } from "~/features/enrollments/api/get-enrollment-by-user";
 import { useAuth } from "~/lib/auth";
@@ -18,6 +18,7 @@ const Bootcamps = () => {
 
   const [bootcamps, setBootcamps] = useState<Bootcamp[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
   const {user} = useAuth()
 
   useEffect(() => {
@@ -35,6 +36,11 @@ const Bootcamps = () => {
   }
 
   if (loading) return <PageSpinner />;
+
+  const filteredBootcamps = bootcamps.filter((b) =>
+    b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="container flex flex-col gap-6 mt-4">
@@ -55,21 +61,25 @@ const Bootcamps = () => {
           Master essential hard and soft skills through our comprehensive, expertly designed training programs. Gain practical knowledge, build confidence, and unlock your full potential with courses that are accessible anytime, anywhere—empowering you to learn at your own pace and advance your career with flexibility and ease.
         </div>
         <div className="flex justify-between items-center mb-3">
-          {/* <div className="mt-4 flex gap-5">
-            <div className="flex items-center border bg-white px-3 py-2 rounded-md w-120">
+          <div className="mt-4 flex gap-3 w-full">
+            <div className="flex items-center border bg-white px-3 py-2 rounded-md flex-1 max-w-xl">
               <CiSearch className="text-gray-500 text-xl" />
               <input
                 type="text"
-                placeholder="Search by Name, Skill Type or Learning Mode"
-                className="bg-transparent outline-none px-2 py-1 text-gray-600 w-full"
+                placeholder="Search by bootcamp name or description..."
+                className="bg-transparent outline-none px-2 py-1 text-gray-600 w-full text-sm"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button className="bg-accent text-white px-4 py-2 rounded-md">
-              Search
-            </button>
-          </div> */}
+            {searchTerm && (
+              <p className="text-sm text-muted-foreground self-center">
+                Showing {filteredBootcamps.length} of {bootcamps.length} bootcamps
+              </p>
+            )}
+          </div>
         </div>
-        <BootcampsGrid bootcamps={bootcamps} />
+        <BootcampsGrid bootcamps={filteredBootcamps} />
       </div>
     </div>
   );

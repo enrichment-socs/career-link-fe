@@ -13,7 +13,7 @@ import {
 import type { Announcement } from "~/types/api";
 import type { Route } from "./+types/announcement-applicants";
 
-export const loader = async ({ params }: Route.LoaderArgs) => {
+export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
   const { announcementId } = params;
   if (!announcementId) throw new Error("No announcement ID provided");
   return { announcementId };

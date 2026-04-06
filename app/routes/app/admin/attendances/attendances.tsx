@@ -14,7 +14,7 @@ import { type Session, type Attendance } from "~/types/api"
 import { useEffect, useState } from "react"
 import PageSpinner from "~/components/ui/page-spinner"
 
-export const loader = async ({ params }: Route.LoaderArgs) => {
+export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
 
     return {session: params.session}
     

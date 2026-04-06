@@ -10,7 +10,7 @@ import { type Bootcamp, type Session } from "~/types/api";
 import { DeleteSession } from "~/features/session/components/delete-session";
 import PageSpinner from "~/components/ui/page-spinner";
 
-export const loader = async ({ params }: Route.LoaderArgs) => {
+export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
   return {id: params.bootcamp}
 };
 

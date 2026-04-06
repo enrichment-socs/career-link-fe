@@ -6,13 +6,6 @@ import { Input } from "~/components/ui/input";
 import { NavbarContentLayout } from "~/components/layouts/navbar-content-layout";
 import { Modal, type ModalType } from "~/components/modal";
 import { Card, CardContent } from "~/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 
 import { BootcampsGrid } from "~/features/bootcamp/components/bootcamps-grid";
 import { CreateBootcamp } from "~/features/bootcamp/components/create-bootcamp";
@@ -31,9 +24,6 @@ import {
   Grid,
   List,
   TrendingUp,
-  Users,
-  Calendar,
-  Filter,
 } from "lucide-react";
 import { getUsers } from "~/features/home/api/get-student-data";
 import PageSpinner from "~/components/ui/page-spinner";
@@ -44,10 +34,7 @@ const Bootcamps = () => {
     null
   );
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [filterType, setFilterType] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showFilters, setShowFilters] = useState(false);
 
   const revalidator = useRevalidator();
   const [categories, setCategories] = useState<BootcampCategory[]>([])
@@ -172,16 +159,17 @@ const Bootcamps = () => {
                     Add Bootcamp
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowFilters(!showFilters)}
-                    className="gap-2"
-                  >
-                    <Filter className="h-4 w-4" />
-                    Filters
-                  </Button>
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Search bootcamps..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
 
-                  <div className="flex border rounded-md ml-auto">
+                  <div className="flex border rounded-md">
                     <Button
                       variant={viewMode === "grid" ? "default" : "ghost"}
                       size="sm"
@@ -202,59 +190,11 @@ const Bootcamps = () => {
                 </div>
               </div>
 
-              <div
-                className={`mt-4 space-y-4 transition-all duration-200 ${
-                  showFilters ? "block" : "hidden"
-                }`}
-              >
-                <div className="flex flex-col lg:flex-row gap-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      placeholder="Search bootcamps..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-
-                  <Select
-                    value={filterCategory}
-                    onValueChange={setFilterCategory}
-                  >
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Filter by category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.name}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Select value={filterType} onValueChange={setFilterType}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Filter by type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      {bootcampTypes.map((type) => (
-                        <SelectItem key={type.id} value={type.name}>
-                          {type.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {searchTerm && (
+                <div className="mt-3 text-sm text-muted-foreground">
+                  Showing {filteredBootcamps.length} of {bootcamps.length} bootcamps
                 </div>
-
-                <div className="text-sm text-muted-foreground">
-                  Showing {filteredBootcamps.length} of {bootcamps.length}{" "}
-                  bootcamps
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
@@ -268,15 +208,11 @@ const Bootcamps = () => {
                   No bootcamps found
                 </h3>
                 <p className="text-gray-500 mb-4">
-                  {searchTerm ||
-                  filterCategory !== "all" ||
-                  filterType !== "all"
-                    ? "Try adjusting your search or filter criteria."
+                  {searchTerm
+                    ? "Try adjusting your search criteria."
                     : "Get started by creating your first bootcamp."}
                 </p>
-                {!searchTerm &&
-                  filterCategory === "all" &&
-                  filterType === "all" && (
+                {!searchTerm && (
                     <Button
                       onClick={() => setActiveModal("create")}
                       className="gap-2"

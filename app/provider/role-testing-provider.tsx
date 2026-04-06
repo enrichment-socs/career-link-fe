@@ -11,7 +11,12 @@ interface RoleContextType {
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export const RoleTestingProvider = ({ children }: { children: ReactNode }) => {
-  const [role, setRole] = useState<Role>("user");
+  const [role, setRole] = useState<Role>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("role") as Role) || "user";
+    }
+    return "user";
+  });
   let {user} = useAuth()
 
   const updateRole = () => {

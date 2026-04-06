@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import AssignmentAnswerGrid from "~/features/assignment/components/assignment-answer-grid";
 import PageSpinner from "~/components/ui/page-spinner";
 
-export const loader = async ({ params }: Route.LoaderArgs) => {
+export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
     return {
         assignment: params.assignment, 
         session: params.session, 

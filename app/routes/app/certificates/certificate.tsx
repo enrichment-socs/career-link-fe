@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { type Certificate } from "~/types/api";
 import PageSpinner from "~/components/ui/page-spinner";
 
-export const loader = async ({params}:Route.LoaderArgs) => {
+export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
     return {id: params.id}
 }
 

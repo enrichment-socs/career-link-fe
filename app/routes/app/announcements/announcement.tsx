@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import type { Announcement } from "~/types/api";
 import PageSpinner from "~/components/ui/page-spinner";
 
-export const loader = async ({ params }: Route.LoaderArgs) => {
+export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
 
   const { announcementId } = params;
   if (!announcementId) throw new Error("no announcement id");

@@ -29,7 +29,7 @@ import TableLayout from "~/components/layouts/table-layout";
 import { TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import PageSpinner from "~/components/ui/page-spinner";
 
-export const loader = async ({ params }: Route.LoaderArgs) => {
+export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
 
     return {
         session: params.session

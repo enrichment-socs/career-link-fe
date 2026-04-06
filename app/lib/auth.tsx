@@ -56,6 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (!token) {
         setUser(null);
+        setLoading(false);
         return;
       }
 

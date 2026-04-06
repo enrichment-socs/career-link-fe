@@ -9,7 +9,7 @@ import { type Question } from "~/types/api";
 import PageSpinner from "~/components/ui/page-spinner";
 
 
-export const loader = async ({ params }: Route.LoaderArgs) => {
+export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
 
     
     return {id: params.test, session: params.session, bootcamp: params.bootcamp}
