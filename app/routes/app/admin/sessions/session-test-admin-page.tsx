@@ -6,6 +6,7 @@ import { type ModalType } from "~/components/modal";
 import { FaArrowLeft } from "react-icons/fa";
 import TestQuestionGrid from "~/features/quiz/components/test-question-grid";
 import { type Question } from "~/types/api";
+import PageSpinner from "~/components/ui/page-spinner";
 
 
 export const loader = async ({ params }: Route.LoaderArgs) => {
@@ -19,10 +20,17 @@ const SessionTestAdminPage = ({loaderData}:Route.ComponentProps) => {
     const {id, session, bootcamp} = loaderData
 
     const [questions, setQuestions] = useState<Question[]>([])
+    const [loading, setLoading] = useState(true)
     
     const fetchQuestions = async () => {
-        const {data:questions} = await getSessionTestQuestions(loaderData.id)
-        setQuestions(questions)
+        try {
+            const {data:questions} = await getSessionTestQuestions(loaderData.id)
+            setQuestions(questions)
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false)
+        }
     }
 
     useEffect(() => {
@@ -33,6 +41,8 @@ const SessionTestAdminPage = ({loaderData}:Route.ComponentProps) => {
     const onSuccess = () => {
         fetchQuestions().then(() => setActiveModal(null));
     };
+
+    if (loading) return <PageSpinner />;
     
     return (
         <div className="flex flex-col w-full gap-5">

@@ -12,6 +12,7 @@ import { getBootcampSession } from "~/features/session/api/get-session"
 import { exportToExcel } from "~/lib/excel"
 import { type Session, type Attendance } from "~/types/api"
 import { useEffect, useState } from "react"
+import PageSpinner from "~/components/ui/page-spinner"
 
 export const loader = async ({ params }: Route.LoaderArgs) => {
 
@@ -34,12 +35,19 @@ const Attendances = ({loaderData}:Route.ComponentProps) => {
 
     const [attendances, setAttendances] = useState<Attendance[]>([])
     const [session, setSession] = useState<Session>()
+    const [loading, setLoading] = useState(true)
     
     const fetchAttendances =async () => {
-        const {data: attendances} = await getAttendanceBySession(loaderData.session)
-        const {data: session} = await getBootcampSession(loaderData.session)
-        setAttendances(attendances)
-        setSession(session)
+        try {
+            const {data: attendances} = await getAttendanceBySession(loaderData.session)
+            const {data: session} = await getBootcampSession(loaderData.session)
+            setAttendances(attendances)
+            setSession(session)
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
     }
 
     useEffect(() => {
@@ -68,6 +76,7 @@ const Attendances = ({loaderData}:Route.ComponentProps) => {
         }, [] as AttendanceRow[])
     }
 
+    if (loading) return <PageSpinner />;
     if (!session) return null
 
     const exportResult = () => {

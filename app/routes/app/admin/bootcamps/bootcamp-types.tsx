@@ -10,6 +10,7 @@ import { CreateBootcampType } from "~/features/bootcamp-type/components/create-b
 import { UpdateBootcampType } from "~/features/bootcamp-type/components/update-bootcamp-type";
 import { DeleteBootcampType } from "~/features/bootcamp-type/components/delete-bootcamp-type";
 import { getErrorMessage } from "~/lib/error";
+import PageSpinner from "~/components/ui/page-spinner";
 
 const BootcampTypes = () => {
   const [selectedBootcampType, setSelectedBootcampType] =
@@ -18,6 +19,7 @@ const BootcampTypes = () => {
   const revalidator = useRevalidator();
 
   const [bootcampTypeData, setbootcampTypeData] = useState<BootcampType[]>([])
+  const [loading, setLoading] = useState(true)
   
     const fetchbootcampType = async () => {
       try {
@@ -25,6 +27,8 @@ const BootcampTypes = () => {
         setbootcampTypeData(bootcampTypeData)
       } catch (error) {
         console.log(getErrorMessage(error))
+      } finally {
+        setLoading(false)
       }
     };
   
@@ -47,6 +51,8 @@ const BootcampTypes = () => {
     setSelectedBootcampType(bootcampType);
     setActiveModal("delete");
   };
+
+  if (loading) return <PageSpinner />;
 
   return (
     <>

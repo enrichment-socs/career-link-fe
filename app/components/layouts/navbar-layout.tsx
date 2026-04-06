@@ -5,6 +5,7 @@ import SidebarContent from "~/components/sidebar/sidebar-content";
 import CenterLayout from "~/components/layouts/center-layout";
 import { useAuth } from "~/lib/auth";
 import { useEffect } from "react";
+import PageSpinner from "~/components/ui/page-spinner";
 
 const NavbarLayout = () => {
   const { user, loading } = useAuth();
@@ -16,7 +17,7 @@ const NavbarLayout = () => {
     }
   }, [loading, user]);
 
-  if (loading) return null;
+  if (loading) return <PageSpinner />;
 
   if (!user) return null;
 

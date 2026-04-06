@@ -3,6 +3,7 @@ import type { Route } from "./+types/announcement";
 import { getAnnouncement } from "~/features/announcements/api/get-announcement";
 import { useEffect, useState } from "react";
 import type { Announcement } from "~/types/api";
+import PageSpinner from "~/components/ui/page-spinner";
 
 export const loader = async ({ params }: Route.LoaderArgs) => {
 
@@ -14,19 +15,24 @@ export const loader = async ({ params }: Route.LoaderArgs) => {
 
 export default function Announcement({ loaderData }: Route.ComponentProps) {
   const [announcement, setAnnouncement] = useState<Announcement>()
+  const [loading, setLoading] = useState(true);
 
   const fetchAnnouncement = async () => {
-    
+    try {
       const {data: announcement} = await getAnnouncement({id: loaderData.id});
-
-      if (!announcement) throw new Error("no announcement found");
-
       setAnnouncement(announcement)
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
     fetchAnnouncement()
   },[])
+
+  if (loading) return <PageSpinner />;
 
   if (!announcement){
     return null;

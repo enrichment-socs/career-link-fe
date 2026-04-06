@@ -7,6 +7,7 @@ import { getAssignmentResultByAssignment } from "~/features/assignment/api/resul
 import { getEnrollmentByBootcamp } from "~/features/enrollments/api/get-enrollment-by-bootcamp";
 import { useEffect, useState } from "react";
 import AssignmentAnswerGrid from "~/features/assignment/components/assignment-answer-grid";
+import PageSpinner from "~/components/ui/page-spinner";
 
 export const loader = async ({ params }: Route.LoaderArgs) => {
     return {
@@ -24,27 +25,36 @@ const AssignmentAnswers = ({loaderData}:Route.ComponentProps) => {
     const [enrollments, setEnrollments] = useState<Enrollment[]>([])
     const [answers, setAnswers] = useState<Record<string, AssignmentAnswer>>({})
     const [results, setResults] = useState<Record<string, AssignmentResult>>({})
+    const [loading, setLoading] = useState(true)
     
     
-    const fetch = async () => {
-        const {data: answers} = await getAssignmentAnswerByAssignment(assignment).catch(() => ({data: []}))
-        const {data: results} = await getAssignmentResultByAssignment(assignment).catch(() => ({data: []}))
-        const {data: enrollments} = await getEnrollmentByBootcamp(bootcamp).catch(() => ({data: []}));
+    const fetchData = async () => {
+        try {
+            const {data: answers} = await getAssignmentAnswerByAssignment(assignment).catch(() => ({data: []}))
+            const {data: results} = await getAssignmentResultByAssignment(assignment).catch(() => ({data: []}))
+            const {data: enrollments} = await getEnrollmentByBootcamp(bootcamp).catch(() => ({data: []}));
 
-        setAnswers(answers.reduce((acc, item) => {
-            acc[item.user_id] = item;
-            return acc;  
-        }, {} as Record<string, AssignmentAnswer>))
-        setResults(results.reduce((acc, item) => {
-            acc[item.user_id] = item;
-            return acc;
-        }, {} as Record<string, AssignmentResult>))
-        setEnrollments(enrollments)
+            setAnswers(answers.reduce((acc, item) => {
+                acc[item.user_id] = item;
+                return acc;  
+            }, {} as Record<string, AssignmentAnswer>))
+            setResults(results.reduce((acc, item) => {
+                acc[item.user_id] = item;
+                return acc;
+            }, {} as Record<string, AssignmentResult>))
+            setEnrollments(enrollments)
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
     }
 
     useEffect(() => {
-        fetch()
+        fetchData()
     }, [])
+
+    if (loading) return <PageSpinner />;
 
     return (
     <div className="flex flex-col w-full gap-y-4 bg-white rounded-lg shadow-md p-5">

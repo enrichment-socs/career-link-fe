@@ -9,6 +9,7 @@ import { getErrorMessage } from "~/lib/error";
 import { useEffect, useState } from "react";
 import type { Question } from "~/types/api";
 import { useAuth } from "~/lib/auth";
+import PageSpinner from "~/components/ui/page-spinner";
 
 export const loader = async ({ params }:Route.LoaderArgs) => {
 
@@ -21,6 +22,7 @@ const Quiz = ({loaderData}:Route.ComponentProps) => {
     let {sessionId, bootcampId, attemptId, testId} = loaderData
     
     const [questions, setQuestions] = useState<Question[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const fetchQuestion = async () => {
         
@@ -40,6 +42,7 @@ const Quiz = ({loaderData}:Route.ComponentProps) => {
             console.log("Using saved questions")
             setQuestions(JSON.parse(savedQuestions));
         }
+        setLoading(false);
     }
 
     useEffect(() => {
@@ -81,7 +84,7 @@ const Quiz = ({loaderData}:Route.ComponentProps) => {
                 </Link>
             </div>
             <div className="flex flex-col gap-2 w-full">
-               {
+               {loading ? <PageSpinner /> :
                questions.length > 0 && 
                <SessionTestAttemptGrid onFinish={finish} attemptId={attemptId} questions={questions}/>
                }

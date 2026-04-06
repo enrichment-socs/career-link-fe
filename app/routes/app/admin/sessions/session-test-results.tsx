@@ -14,6 +14,7 @@ import { exportToExcel } from "~/lib/excel"
 import { type Enrollment, type StudentAttempt, type SessionTest, type StudentScore } from "~/types/api"
 import { getEnrollmentByBootcamp } from "~/features/enrollments/api/get-enrollment-by-bootcamp"
 import { useEffect, useState } from "react"
+import PageSpinner from "~/components/ui/page-spinner"
 
 
 
@@ -25,18 +26,18 @@ const SessionTestResults = ({loaderData}:Route.ComponentProps) => {
 
     const [test, setTest] = useState<SessionTest>()
     const [attempts, setAttempts] = useState<StudentScore[]>([])
+    const [loading, setLoading] = useState(true)
 
     const fetchTest = async () => {
         const {data: test} = await getTest(loaderData.test).catch(() => ({data: null}))
         if (test){
-            console.log(test)
             setTest(test)
         }
+        setLoading(false)
     }
 
     const fetchAttempts= async () => {
         if (test){
-            console.log("Fetching attempts")
             const {data: attempts} = await getAllStudentAttemptByTest(loaderData.test).catch(() => ({data: []}))
             const {data: enrollments} = await getEnrollmentByBootcamp(loaderData.bootcamp).catch(() => ({data: []}))
 
@@ -76,6 +77,9 @@ const SessionTestResults = ({loaderData}:Route.ComponentProps) => {
             }
         )))
     }
+
+    if (loading) return <PageSpinner />;
+
     return (
     <div className="flex flex-col w-full gap-y-4 bg-white rounded-lg shadow-md p-5">
             <div className={'w-full flex items-center'}>

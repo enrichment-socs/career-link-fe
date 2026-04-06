@@ -8,6 +8,7 @@ import { CreateUpdateSession } from "~/features/session/components/create-sessio
 import SessionsGrid from "~/features/session/components/sessions-grid";
 import { type Bootcamp, type Session } from "~/types/api";
 import { DeleteSession } from "~/features/session/components/delete-session";
+import PageSpinner from "~/components/ui/page-spinner";
 
 export const loader = async ({ params }: Route.LoaderArgs) => {
   return {id: params.bootcamp}
@@ -18,6 +19,7 @@ const BootcampDetail = ({ loaderData }: Route.ComponentProps) => {
   const revalidator = useRevalidator();
   const [selectedSession, setSelectedSession] = useState<Session>();
   const [bootcamp, setBootcamp] = useState<Bootcamp>()
+  const [loading, setLoading] = useState(true);
 
   const fetchBootcamp = async () => {
     try {
@@ -25,6 +27,8 @@ const BootcampDetail = ({ loaderData }: Route.ComponentProps) => {
       setBootcamp(data);
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,6 +50,8 @@ const BootcampDetail = ({ loaderData }: Route.ComponentProps) => {
     setActiveModal(null);
     fetchBootcamp();
   };
+
+  if (loading) return <PageSpinner />;
 
   if (!bootcamp || !bootcamp.category || !bootcamp.type){
     return null

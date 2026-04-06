@@ -36,6 +36,7 @@ import {
   Filter,
 } from "lucide-react";
 import { getUsers } from "~/features/home/api/get-student-data";
+import PageSpinner from "~/components/ui/page-spinner";
 
 const Bootcamps = () => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
@@ -53,6 +54,7 @@ const Bootcamps = () => {
   const [bootcampTypes, setBootcampTypes] = useState<BootcampType[]>([])
   const [bootcamps, setBootcamps] = useState<Bootcamp[]>([])
   const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
 
   const onSuccess = async () => {
     setActiveModal(null);
@@ -61,14 +63,20 @@ const Bootcamps = () => {
   };
 
   const fetchBootcamps = async () => {
-    const {data: bootcamps} = await getBootcamps()
-    const {data: bootcampTypes} = await getBootcampTypes()
-    const {data: bootcampCategories} = await getBootcampCategories()
-    const {data: users} = await getUsers(1, 10000)
-    setBootcampTypes(bootcampTypes)
-    setCategories(bootcampCategories)
-    setBootcamps(bootcamps)
-    setUsers(users)
+    try {
+      const {data: bootcamps} = await getBootcamps()
+      const {data: bootcampTypes} = await getBootcampTypes()
+      const {data: bootcampCategories} = await getBootcampCategories()
+      const {data: users} = await getUsers(1, 10000)
+      setBootcampTypes(bootcampTypes)
+      setCategories(bootcampCategories)
+      setBootcamps(bootcamps)
+      setUsers(users)
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -88,6 +96,8 @@ const Bootcamps = () => {
     // const matchesType = filterType === "all" || bootcamp.types?.name === filterType;
     return matchesSearch; // && matchesCategory && matchesType;
   });
+
+  if (loading) return <PageSpinner />;
 
   return (
     <>

@@ -5,19 +5,27 @@ import { useAuth } from "~/lib/auth";
 import { useEffect, useState } from "react";
 import type { Certificate } from "~/types/api";
 import EmptyMessage from "~/components/ui/empty-message";
+import PageSpinner from "~/components/ui/page-spinner";
 
 const Certificates = () => {
   
   const {user} = useAuth()
   const [certificates, setCertificates] = useState<Certificate[]>([])
+  const [loading, setLoading] = useState(true)
   
-  const fetch = async () => {
-    const {data: certificates} = await getCertificateByUser(user?.id!)
-    setCertificates(certificates)
+  const fetchCertificates = async () => {
+    try {
+      const {data: certificates} = await getCertificateByUser(user?.id!)
+      setCertificates(certificates)
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    fetch()
+    fetchCertificates()
   }, [])
 
   
@@ -27,6 +35,8 @@ const Certificates = () => {
         <a href="/career-link/">Login here</a>
     </div>
   }
+
+  if (loading) return <PageSpinner />;
 
   return (
     <NavbarContentLayout title="My Certificates">

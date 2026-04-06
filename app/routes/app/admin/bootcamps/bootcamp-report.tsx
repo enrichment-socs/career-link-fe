@@ -7,6 +7,7 @@ import { getBootcamp } from "~/features/bootcamp/api/get-bootcamp"
 import { getCertificateByBootcamp } from "~/features/certificates/api/get-certificate-by-bootcamp"
 import { useEffect, useState } from "react"
 import { type Enrollment } from "~/types/api"
+import PageSpinner from "~/components/ui/page-spinner"
 
 export const loader = async ({ params }: Route.LoaderArgs) => {
 
@@ -20,21 +21,30 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
     const [certificates, setCertificates] = useState<string[]>([])
     const [sessionCount, setSessionCount] = useState(0)
     const [enrollments, setEnrollments] = useState<Enrollment[]>([])
+    const [loading, setLoading] = useState(true)
 
 
     const fetchBootcamp = async () => {
-        const { data: bootcamp } = await getBootcamp(loaderData.id);
-        const {data: certificates} = await getCertificateByBootcamp(loaderData.id)
-        const {data: enrollments} = await getBootcampReportByBootcampId(loaderData.id)
+        try {
+            const { data: bootcamp } = await getBootcamp(loaderData.id);
+            const {data: certificates} = await getCertificateByBootcamp(loaderData.id)
+            const {data: enrollments} = await getBootcampReportByBootcampId(loaderData.id)
 
-        setCertificates(certificates.map(e => e.user_id))
-        setSessionCount(bootcamp.sessions.length)
-        setEnrollments(enrollments)
+            setCertificates(certificates.map(e => e.user_id))
+            setSessionCount(bootcamp.sessions.length)
+            setEnrollments(enrollments)
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
     }
 
     useEffect(() => {
         fetchBootcamp()
     }, [])  
+
+    if (loading) return <PageSpinner />;
     
     return (<>
     <div className="w-full">

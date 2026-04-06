@@ -16,6 +16,7 @@ import EmptyMessage from "~/components/ui/empty-message";
 import { useAuth } from "~/lib/auth";
 import { getErrorMessage } from "~/lib/error";
 import { getUsers } from "~/features/home/api/get-student-data";
+import PageSpinner from "~/components/ui/page-spinner";
 
 const Announcements = ({ loaderData }: Route.ComponentProps) => {
   const { role } = useRole();
@@ -23,6 +24,7 @@ const Announcements = ({ loaderData }: Route.ComponentProps) => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [announcementsData, setAnnouncementsData] = useState<Announcement[]>([])
+  const [loading, setLoading] = useState(true);
 
   const fetchAnnouncements = async () => {
     try {
@@ -30,6 +32,8 @@ const Announcements = ({ loaderData }: Route.ComponentProps) => {
       setAnnouncementsData(announcementsData)
     } catch (error) {
       console.log(getErrorMessage(error))
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,6 +60,8 @@ const Announcements = ({ loaderData }: Route.ComponentProps) => {
         <a href="/career-link/">Login here</a>
     </div>
   }
+
+  if (loading) return <PageSpinner />;
 
   return (
     <NavbarContentLayout

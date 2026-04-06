@@ -5,6 +5,7 @@ import { getEnrollmentByBootcamp } from "~/features/enrollments/api/get-enrollme
 import EnrollmentGrid from "~/features/enrollments/components/enrollment-grid"
 import { useEffect, useState } from "react"
 import type { Enrollment } from "~/types/api"
+import PageSpinner from "~/components/ui/page-spinner"
 
 export const loader = async ({params}:Route.LoaderArgs) => {    
     return {bootcamp: params.bootcamp}
@@ -15,17 +16,24 @@ const Enrollments = ({loaderData}:Route.ComponentProps) => {
     const {bootcamp} = loaderData
 
     const [enrollments, setEnrollments] = useState<Enrollment[]>([])
+    const [loading, setLoading] = useState(true)
 
     const fetchEnrollment = async () => {
-
-        const {data: enrollments} = await getEnrollmentByBootcamp(bootcamp)
-        setEnrollments(enrollments)
-
+        try {
+            const {data: enrollments} = await getEnrollmentByBootcamp(bootcamp)
+            setEnrollments(enrollments)
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
     }
 
     useEffect(() => {
         fetchEnrollment()
     }, [])
+
+    if (loading) return <PageSpinner />;
 
     return (<>
         <div className="w-full flex flex-col gap-5">

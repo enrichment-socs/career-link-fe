@@ -26,6 +26,7 @@ import type { Route } from "./+types/session-detail";
 import { useAuth } from "~/lib/auth";
 import TableLayout from "~/components/layouts/table-layout";
 import { TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+import PageSpinner from "~/components/ui/page-spinner";
 
 export const loader = async ({ params }: Route.LoaderArgs) => {
 
@@ -51,10 +52,11 @@ const Session = ({loaderData}:Route.ComponentProps) => {
     const [attendances, setAttendances] = useState<Attendance[]>([])
     const [activeModal, setActiveModal] = useState<ModalType>(null);    
     const revalidator = useRevalidator();
+    const [loading, setLoading] = useState(true);
     
     
     const fetchAll = async () => {
-        // try {
+        try {
             const { data: session } = await getBootcampSession(loaderData.session);
             setSession(session)
             
@@ -81,15 +83,18 @@ const Session = ({loaderData}:Route.ComponentProps) => {
             const {data: posttestAttempts} = await getStudentAttemptByTest(postTest ? postTest.id:"", user?.id!)
             setAttemptPosttest(posttestAttempts)
 
-        // } catch (error) {
-        //     console.log(error)            
-        // }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
     }
     
     useEffect(() => {
         fetchAll()
     }, [user])
     
+    if (loading) return <PageSpinner />;
     if (!session) return null
 
 

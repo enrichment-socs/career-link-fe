@@ -9,6 +9,7 @@ import type { BootcampCategory } from "~/types/api";
 import { DeleteBootcampCategory } from "~/features/bootcamp-category/components/delete-bootcamp-category";
 import { UpdateBootcampCategory } from "~/features/bootcamp-category/components/update-bootcamp-category";
 import { getErrorMessage } from "~/lib/error";
+import PageSpinner from "~/components/ui/page-spinner";
 
 const BootcampCategories = () => {
   const [selectedCategory, setSelectedCategory] =
@@ -17,6 +18,7 @@ const BootcampCategories = () => {
   const revalidator = useRevalidator();
 
   const [data, setdata] = useState<BootcampCategory[]>([])
+  const [loading, setLoading] = useState(true)
   
     const fetchBootcampCategories = async () => {
       try {
@@ -24,6 +26,8 @@ const BootcampCategories = () => {
         setdata(data)
       } catch (error) {
         console.log(getErrorMessage(error))
+      } finally {
+        setLoading(false)
       }
     };
   
@@ -46,6 +50,8 @@ const BootcampCategories = () => {
     setSelectedCategory(category);
     setActiveModal("delete");
   };
+
+  if (loading) return <PageSpinner />;
 
   return (
     <>

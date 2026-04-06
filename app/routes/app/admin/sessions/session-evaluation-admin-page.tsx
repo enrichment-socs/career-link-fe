@@ -4,6 +4,7 @@ import { getEvaluationQuestionBySession } from "~/features/evaluation/api/get-ev
 import { useRevalidator } from "react-router";
 import { useEffect, useState } from "react";
 import { type EvaluationQuestion } from "~/types/api";
+import PageSpinner from "~/components/ui/page-spinner";
 
 
 export const loader = async ({ params }: Route.LoaderArgs) => {
@@ -14,11 +15,17 @@ const SessionEvaluationAdminPage = ({loaderData}:Route.ComponentProps) => {
 
 
     const [evaluationQuestions, setEvaluationQuestions] = useState<EvaluationQuestion[]>([])
+    const [loading, setLoading] = useState(true)
 
     const fetchEvaluationQuestions = async () => {
-
-        let {data: evaluationQuestions} = await getEvaluationQuestionBySession(loaderData.session)
-        setEvaluationQuestions(evaluationQuestions)
+        try {
+            let {data: evaluationQuestions} = await getEvaluationQuestionBySession(loaderData.session)
+            setEvaluationQuestions(evaluationQuestions)
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false)
+        }
     }
 
     useEffect(() => {
@@ -27,8 +34,9 @@ const SessionEvaluationAdminPage = ({loaderData}:Route.ComponentProps) => {
 
     const onSuccess = async () => {
         await fetchEvaluationQuestions()
-
     }
+
+    if (loading) return <PageSpinner />;
 
     return (
         <>

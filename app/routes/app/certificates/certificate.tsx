@@ -3,6 +3,7 @@ import {CertificatePreview} from "~/features/certificates/components/certificate
 import type { Route } from "./+types/certificate";
 import { useEffect, useState } from "react";
 import { type Certificate } from "~/types/api";
+import PageSpinner from "~/components/ui/page-spinner";
 
 export const loader = async ({params}:Route.LoaderArgs) => {
     return {id: params.id}
@@ -11,15 +12,24 @@ export const loader = async ({params}:Route.LoaderArgs) => {
 export default function Certificate({loaderData}: Route.ComponentProps) {
 
     const [certificate, setCertificate] = useState<Certificate>()
+    const [loading, setLoading] = useState(true);
     
-    const fetchAnnouncement = async () => {
-        const {data: certificate} = await getCertificate(loaderData.id)
-        setCertificate(certificate)
+    const fetchCertificate = async () => {
+        try {
+            const {data: certificate} = await getCertificate(loaderData.id)
+            setCertificate(certificate)
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
     }
 
     useEffect(() => {
-        fetchAnnouncement()
+        fetchCertificate()
     }, [])
+
+    if (loading) return <PageSpinner />;
 
     if (!certificate){
         return null
