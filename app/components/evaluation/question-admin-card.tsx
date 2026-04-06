@@ -11,6 +11,7 @@ import { updateEvalQuestion, type UpdateEvalQuestionInput } from "~/features/eva
 import { deleteEvaluationQuestion } from "~/features/evaluation/api/delete-evaluation-question"
 import { useState } from "react"
 import { Textarea } from "../ui/textarea"
+import { Modal } from "../modal"
 
 interface Props {
     idx: number,
@@ -21,6 +22,8 @@ interface Props {
 const EvaluationCard = ({idx, question, onSuccess}:Props) => {
 
     let [isUpdating, setUpdating] = useState(false)
+    let [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+    let [isDeleting, setIsDeleting] = useState(false)
 
     let form = useForm<UpdateEvalQuestionInput>({
         defaultValues: question
@@ -57,18 +60,21 @@ const EvaluationCard = ({idx, question, onSuccess}:Props) => {
     }
 
     let onDelete = async (question: EvaluationQuestion) => {
+        setIsDeleting(true)
         setUpdating(false)
         const toastId = toast.loading(`Deleting evaluation question...`);
 
         try {
             await deleteEvaluationQuestion(question.id)
             toast.success("Delete evaluation question success", { id: toastId })
-            
+            setShowDeleteConfirm(false)
             onSuccess()
         } catch (error) {
             toast.error(getErrorMessage(error), {
             id: toastId,
             });
+        } finally {
+            setIsDeleting(false)
         }
     }
 
@@ -115,10 +121,21 @@ const EvaluationCard = ({idx, question, onSuccess}:Props) => {
                         </div>
                         <div className="flex w-full gap-5 justify-end">
                             <Button className="w-1/5">Update</Button>
-                            <Button className="w-1/5" variant={"destructive"} type="button" onClick={() => onDelete(question)}>Remove</Button>
+                            <Button className="w-1/5" variant={"destructive"} type="button" onClick={() => setShowDeleteConfirm(true)}>Remove</Button>
                         </div>
                     </form>
                 </Form>
+                <Modal title="Remove Evaluation Question" isOpen={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)}>
+                    <div className="flex flex-col gap-5">
+                        <p>Are you sure you want to remove this evaluation question?</p>
+                        <div className="flex justify-end gap-2">
+                            <Button onClick={() => setShowDeleteConfirm(false)} variant="outline" disabled={isDeleting}>Cancel</Button>
+                            <Button onClick={() => onDelete(question)} variant="destructive" disabled={isDeleting}>
+                                {isDeleting ? "Removing..." : "Remove"}
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
             
 

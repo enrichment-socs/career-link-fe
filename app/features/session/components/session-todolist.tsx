@@ -134,6 +134,7 @@ const SessionTodolist = ({
         <AccordionLayout
           text={"Material"}
           isLocked={role == "user" && attemptsPretest.length < 1}
+          lockedMessage="Complete the Pre Test to unlock this section."
         >
           <SessionDataCard sessionData={sessionData} session={session} />
         </AccordionLayout>
@@ -143,6 +144,7 @@ const SessionTodolist = ({
             role == "user" &&
             (attemptsPretest.length < 1 || attendances.length < 1)
           }
+          lockedMessage="Complete the Pre Test and Clock In to unlock this section."
         >
           <TestCard
             testType={TestType.POST_TEST}
@@ -154,6 +156,7 @@ const SessionTodolist = ({
         <AccordionLayout
           text={"Assignment"}
           isLocked={role == "user" && attemptsPosttest.length < 1}
+          lockedMessage="Complete the Post Test to unlock this section."
         >
           <AssignmentCard
             session={session}

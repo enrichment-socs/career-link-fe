@@ -22,6 +22,8 @@ const SessionDataCard = ({sessionData, session}:Props) => {
     const [activeModal, setActiveModal] = useState<ModalType>(null);
     const revalidator = useRevalidator();
     const [selectedData, setSelectedData] = useState<SessionData>();
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const onUpdate = (e:SessionData) => {
         setActiveModal('update')
@@ -32,17 +34,21 @@ const SessionDataCard = ({sessionData, session}:Props) => {
         setActiveModal(null);
         revalidator.revalidate();
     };
-    const onDelete = async (id: string) => {
-
+    const onDelete = async () => {
+        if (!deleteId) return;
+        setIsDeleting(true);
         const toastId = toast.loading("Deleting material...");
         try {
-        const res = await deleteSessionData(id);
+        await deleteSessionData(deleteId);
         toast.success("Material deleted", { id: toastId });
+        setDeleteId(null);
         onSuccess();
         } catch (error) {
         toast.error(getErrorMessage(error), {
             id: toastId,
         });
+        } finally {
+        setIsDeleting(false);
         }
     }
 
@@ -55,6 +61,21 @@ const SessionDataCard = ({sessionData, session}:Props) => {
             onClose={() => setActiveModal(null)}
         >
             <CreateSessionData onSuccess={onSuccess} session={session} />
+        </Modal>
+        <Modal
+            title="Delete Material"
+            isOpen={deleteId !== null}
+            onClose={() => setDeleteId(null)}
+        >
+            <div className="flex flex-col gap-5">
+                <p>Are you sure you want to delete this material?</p>
+                <div className="flex justify-end gap-2">
+                    <Button onClick={() => setDeleteId(null)} variant="outline" disabled={isDeleting}>Cancel</Button>
+                    <Button onClick={onDelete} variant="destructive" disabled={isDeleting}>
+                        {isDeleting ? "Deleting..." : "Delete"}
+                    </Button>
+                </div>
+            </div>
         </Modal>
         <Modal 
             title={`Update Material`}
@@ -76,7 +97,7 @@ const SessionDataCard = ({sessionData, session}:Props) => {
                     {
                         role == 'admin' && <div className="flex gap-2">
                             <Button onClick={() => onUpdate(e)}><FaEdit /></Button>
-                            <Button onClick={() => onDelete(e.id)}><FaTrash /></Button>
+                            <Button onClick={() => setDeleteId(e.id)}><FaTrash /></Button>
                         </div>
                     }
                 </div>
