@@ -78,7 +78,8 @@ const AssignmentAnswers = ({loaderData}:Route.ComponentProps) => {
                 assignment={assignment}
                 enrollments={enrollments}
                 results={results}
-                answers={answers} 
+                answers={answers}
+                onRefresh={fetchData}
             />
     </div>)
 }

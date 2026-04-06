@@ -44,6 +44,7 @@ interface Props {
   attemptsPretest: StudentScore[];
   attemptsPosttest: StudentScore[];
   evaluationQuestions: EvaluationQuestion[];
+  onRefresh?: () => void;
 }
 
 const SessionTodolist = ({
@@ -57,6 +58,7 @@ const SessionTodolist = ({
   attemptsPretest,
   attemptsPosttest,
   evaluationQuestions,
+  onRefresh,
 }: Props) => {
   const { role } = useRole();
   const [answers, setAnswers] = useState<string[]>(evaluationQuestions.map(_ => ""))
@@ -129,6 +131,7 @@ const SessionTodolist = ({
             sessionId={session.id}
             test={preTest}
             attempts={attemptsPretest}
+            onRefresh={onRefresh}
           />
         </AccordionLayout>
         <AccordionLayout
@@ -136,7 +139,7 @@ const SessionTodolist = ({
           isLocked={role == "user" && attemptsPretest.length < 1}
           lockedMessage="Complete the Pre Test to unlock this section."
         >
-          <SessionDataCard sessionData={sessionData} session={session} />
+          <SessionDataCard sessionData={sessionData} session={session} onRefresh={onRefresh} />
         </AccordionLayout>
         <AccordionLayout
           text={"Post Test"}
@@ -151,6 +154,7 @@ const SessionTodolist = ({
             sessionId={session.id}
             test={postTest}
             attempts={attemptsPosttest}
+            onRefresh={onRefresh}
           />
         </AccordionLayout>
         <AccordionLayout
@@ -161,6 +165,7 @@ const SessionTodolist = ({
           <AssignmentCard
             session={session}
             assignment={assignment}
+            onRefresh={onRefresh}
           />
         </AccordionLayout>
         <AccordionLayout text={"Evaluation"} isLocked={false}>

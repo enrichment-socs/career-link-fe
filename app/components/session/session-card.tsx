@@ -1,5 +1,5 @@
 import { FaArrowLeft } from "react-icons/fa"
-import { Link, useRevalidator } from "react-router"
+import { Link } from "react-router"
 import type { Session } from "~/types/api"
 import { Button } from "../ui/button"
 import { useRole } from "~/provider/role-testing-provider"
@@ -17,11 +17,10 @@ import { isClockInOpen, isClockInRange, isClockOutOpen } from "~/lib/validation"
 
 type Props = {
     session: Session,
+    onRefresh?: () => void,
 }
 
-const SessionCard = ({session}:Props) => {
-
-    const revalidator = useRevalidator()
+const SessionCard = ({session, onRefresh}:Props) => {
 
     const form = useForm<UpdateSessionInput>({
         resolver: zodResolver(updateSessionInputSchema),
@@ -66,7 +65,7 @@ const SessionCard = ({session}:Props) => {
             const res = await updateSession({data, id: session.id})
             toast.success(res.message, { id: toastId });
             form.reset();
-            revalidator.revalidate();
+            onRefresh?.();
         } catch (error) {
             toast.error(getErrorMessage(error), {
                 id: toastId,

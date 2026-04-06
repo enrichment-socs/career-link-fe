@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { Modal, type ModalType } from "~/components/modal";
 import type { BootcampType } from "~/types/api";
 import { BootcampTypesList } from "~/features/bootcamp-type/components/bootcamp-types-list";
-import { useRevalidator } from "react-router";
 import { CreateBootcampType } from "~/features/bootcamp-type/components/create-bootcamp-type";
 import { UpdateBootcampType } from "~/features/bootcamp-type/components/update-bootcamp-type";
 import { DeleteBootcampType } from "~/features/bootcamp-type/components/delete-bootcamp-type";
@@ -16,7 +15,6 @@ const BootcampTypes = () => {
   const [selectedBootcampType, setSelectedBootcampType] =
     useState<BootcampType | null>(null);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const revalidator = useRevalidator();
 
   const [bootcampTypeData, setbootcampTypeData] = useState<BootcampType[]>([])
   const [loading, setLoading] = useState(true)
@@ -39,7 +37,7 @@ const BootcampTypes = () => {
 
   const onSuccess = () => {
     setActiveModal(null);
-    revalidator.revalidate();
+    fetchbootcampType();
   };
 
   const onUpdate = (bootcampType: BootcampType) => {

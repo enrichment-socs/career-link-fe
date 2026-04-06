@@ -5,7 +5,6 @@ import EmptyMessage from "~/components/ui/empty-message"
 import { exportToExcel, importExcel } from "~/lib/excel"
 import type { Enrollment } from "~/types/api"
 import { createEnrollment } from "../api/create-enrollment"
-import { useRevalidator } from "react-router"
 import toast from "react-hot-toast"
 import { getErrorMessage } from "~/lib/error"
 import { Progress } from "~/components/ui/progress"
@@ -17,15 +16,15 @@ import StudentRow from "~/features/home/components/student-row"
 interface Props {
     enrollments: Enrollment[],
     bootcampId: string,
+    onRefresh?: () => void,
 }
 
 interface Template {
     email: string
 }
 
-const EnrollmentGrid = ({enrollments, bootcampId}:Props) => {
+const EnrollmentGrid = ({enrollments, bootcampId, onRefresh}:Props) => {
 
-    const revalidator = useRevalidator()
     const [progress, setProgress] = useState(0)
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [searchTerm, setSearchTerm] = useState("")
@@ -59,7 +58,7 @@ const EnrollmentGrid = ({enrollments, bootcampId}:Props) => {
         toast.success("Student imported", { id: toastId });
         setTimeout(() => {
             setProgress(0)
-            revalidator.revalidate()
+            onRefresh?.()
         }, 3000);
 
     }

@@ -18,6 +18,7 @@ interface Props {
     session: number
     bootcampid: string
     certificates: string[]
+    onRefresh?: () => void
 }
 
 
@@ -51,7 +52,7 @@ const validateEligibility = (enrollment: Enrollment, sessionCount: number) => {
 }
 
 
-const BootcampReportGrid = ({enrollments, session, bootcampid, certificates}:Props) => {
+const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onRefresh}:Props) => {
     
     const [selected, setSelected] = useState<string[]>(enrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? '')).map(_ => ""))
     const [progress, setProgress] = useState(0)
@@ -136,6 +137,7 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates}:Pro
     }finally{
         setTimeout(() => {
             setProgress(0)
+            onRefresh?.()
         }, 3000);
     }
     }

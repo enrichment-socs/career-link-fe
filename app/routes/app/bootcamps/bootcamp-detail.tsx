@@ -2,7 +2,6 @@ import BootcampDetailCard from "~/components/bootcamp/bootcamp-detail-card";
 import { getBootcamp } from "~/features/bootcamp/api/get-bootcamp";
 import type { Route } from "./+types/bootcamp-detail";
 import { Modal, type ModalType } from "~/components/modal";
-import { useRevalidator } from "react-router";
 import { useEffect, useState } from "react";
 import { CreateUpdateSession } from "~/features/session/components/create-session";
 import SessionsGrid from "~/features/session/components/sessions-grid";
@@ -16,7 +15,6 @@ export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
 
 const BootcampDetail = ({ loaderData }: Route.ComponentProps) => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const revalidator = useRevalidator();
   const [selectedSession, setSelectedSession] = useState<Session>();
   const [bootcamp, setBootcamp] = useState<Bootcamp>()
   const [loading, setLoading] = useState(true);
@@ -99,6 +97,7 @@ const BootcampDetail = ({ loaderData }: Route.ComponentProps) => {
           onUpdateSession={onUpdateSession}
           bootcampId={bootcamp.id}
           sessions={bootcamp.sessions ?? []}
+          onRefresh={fetchBootcamp}
         />
       </div>
     </>

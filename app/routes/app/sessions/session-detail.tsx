@@ -9,7 +9,6 @@ import { getStudentAttemptByTest } from "~/features/quiz/api/attempt/get-student
 import { type EvaluationQuestion, type SessionTest, type Assignment, type AssignmentAnswer, type Attendance, type Session, type StudentAttempt, type StudentScore, type SessionData } from "~/types/api";
 import { Button } from "~/components/ui/button";
 import { useEffect, useState } from "react";
-import { useRevalidator } from "react-router";
 import { Modal, type ModalType } from "~/components/modal";
 import EmptyMessage from "~/components/ui/empty-message";
 import SessionTodolist from "~/features/session/components/session-todolist";
@@ -52,7 +51,6 @@ const Session = ({loaderData}:Route.ComponentProps) => {
     const [attemptsPosttest, setAttemptPosttest] = useState<StudentScore[]>([])
     const [attendances, setAttendances] = useState<Attendance[]>([])
     const [activeModal, setActiveModal] = useState<ModalType>(null);    
-    const revalidator = useRevalidator();
     const [loading, setLoading] = useState(true);
     
     
@@ -111,7 +109,7 @@ const Session = ({loaderData}:Route.ComponentProps) => {
 
     const onSuccess = () => {
         setActiveModal(null);
-        revalidator.revalidate();
+        fetchAll();
     };
 
 
@@ -187,6 +185,7 @@ const Session = ({loaderData}:Route.ComponentProps) => {
         <div className={'flex flex-col w-full gap-y-4'}>
             <SessionCard 
                 session={session}
+                onRefresh={fetchAll}
             />
             <SessionTodolist 
                 attendances={attendances}
@@ -199,6 +198,7 @@ const Session = ({loaderData}:Route.ComponentProps) => {
                 postTest={postTest!}
                 preTest={preTest!}
                 evaluationQuestions={evaluationQuestions}
+                onRefresh={fetchAll}
             />
         </div>
     </>

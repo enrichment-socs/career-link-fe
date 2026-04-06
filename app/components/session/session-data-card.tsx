@@ -2,7 +2,7 @@ import type { Session, SessionData } from "~/types/api"
 import { Modal, type ModalType } from "../modal"
 import CreateSessionData from "~/features/session-data/component/create-session-data"
 import { useState } from "react"
-import { Link, useRevalidator } from "react-router"
+import { Link } from "react-router"
 import { useRole } from "~/provider/role-testing-provider"
 import { Button } from "../ui/button"
 import TooltipLayout from "../layouts/tooltip-layout"
@@ -16,11 +16,11 @@ import UpdateSessionData from "~/features/session-data/component/update-session-
 interface Props {
     sessionData: SessionData[]
     session: Session
+    onRefresh?: () => void
 }
 
-const SessionDataCard = ({sessionData, session}:Props) => {
+const SessionDataCard = ({sessionData, session, onRefresh}:Props) => {
     const [activeModal, setActiveModal] = useState<ModalType>(null);
-    const revalidator = useRevalidator();
     const [selectedData, setSelectedData] = useState<SessionData>();
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -32,7 +32,7 @@ const SessionDataCard = ({sessionData, session}:Props) => {
     
     const onSuccess = () => {
         setActiveModal(null);
-        revalidator.revalidate();
+        onRefresh?.();
     };
     const onDelete = async () => {
         if (!deleteId) return;

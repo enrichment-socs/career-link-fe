@@ -1,7 +1,6 @@
 import { useRef, useState, useMemo, type ChangeEvent } from "react";
 import { CiSearch } from "react-icons/ci";
 import toast from "react-hot-toast";
-import { useRevalidator } from "react-router";
 import { exportToExcel, importExcel } from "~/lib/excel";
 import type { AssignmentAnswer, AssignmentResult, Enrollment } from "~/types/api";
 import { AssignmentResultType } from "~/types/enum";
@@ -20,6 +19,7 @@ interface Props {
     enrollments: Enrollment[];
     results: Record<string, AssignmentResult>;
     answers: Record<string, AssignmentAnswer>;
+    onRefresh?: () => void;
 }
 
 interface Template {
@@ -28,9 +28,8 @@ interface Template {
     result: AssignmentResultType,
 }
 
-const AssignmentAnswerGrid = ({assignment, enrollments, results, answers}:Props) => {
+const AssignmentAnswerGrid = ({assignment, enrollments, results, answers, onRefresh}:Props) => {
 
-    const revalidator = useRevalidator();
     const [progress, setProgress] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [searchTerm, setSearchTerm] = useState("");
@@ -67,7 +66,7 @@ const AssignmentAnswerGrid = ({assignment, enrollments, results, answers}:Props)
             toast.success("Student grades has successfully imported", { id: toastId });
             setTimeout(() => {
                 setProgress(0)
-                revalidator.revalidate()
+                onRefresh?.()
             }, 3000);
         } catch (error) {
         toast.error(getErrorMessage(error), {
@@ -126,6 +125,7 @@ const AssignmentAnswerGrid = ({assignment, enrollments, results, answers}:Props)
                         assignment_id={assignment}
                         answerFilePath={answers[e.user_id] ? answers[e.user_id].answer_file_path : undefined}
                         result={results[e.user_id]}
+                        onRefresh={onRefresh}
                     />
                 )
                 }

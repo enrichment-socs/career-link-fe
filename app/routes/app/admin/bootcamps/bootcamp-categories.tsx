@@ -4,7 +4,6 @@ import { Button } from "~/components/ui/button";
 import { useEffect, useState } from "react";
 import { Modal, type ModalType } from "~/components/modal";
 import { CreateBootcampCategory } from "~/features/bootcamp-category/components/create-bootcamp-category";
-import { useRevalidator } from "react-router";
 import type { BootcampCategory } from "~/types/api";
 import { DeleteBootcampCategory } from "~/features/bootcamp-category/components/delete-bootcamp-category";
 import { UpdateBootcampCategory } from "~/features/bootcamp-category/components/update-bootcamp-category";
@@ -15,7 +14,6 @@ const BootcampCategories = () => {
   const [selectedCategory, setSelectedCategory] =
     useState<BootcampCategory | null>(null);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const revalidator = useRevalidator();
 
   const [data, setdata] = useState<BootcampCategory[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,7 +36,7 @@ const BootcampCategories = () => {
 
   const onSuccess = () => {
     setActiveModal(null);
-    revalidator.revalidate();
+    fetchBootcampCategories();
   };
 
   const onUpdate = (category: BootcampCategory) => {

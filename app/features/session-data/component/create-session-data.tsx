@@ -30,14 +30,10 @@ const CreateSessionData = ({session, onSuccess}:Props) => {
         try {
             const res = await createSessionData({data})
             toast.success(res.message, {id: toastId})
-            
+            onSuccess()
         } catch (error) {
             toast.error(getErrorMessage(error), {id: toastId})
-            
         }
-
-
-        onSuccess()
     }
 
     return (<>

@@ -2,7 +2,7 @@ import { useRole } from "~/provider/role-testing-provider"
 import { Button } from "../ui/button"
 import { Modal, type ModalType } from "../modal"
 import { useEffect, useState, type ChangeEvent } from "react"
-import { Link, useRevalidator } from "react-router"
+import { Link } from "react-router"
 import CreateAssignment from "~/features/assignment/components/create-update-assignment"
 import type { Assignment, AssignmentAnswer, AssignmentResult, Session } from "~/types/api"
 import EmptyMessage from "../ui/empty-message"
@@ -20,15 +20,15 @@ interface Props {
     session: Session,
     assignment?: Assignment | undefined,
     assignmentAnswer?: AssignmentAnswer | undefined,
-    result?: AssignmentResult | undefined, 
+    result?: AssignmentResult | undefined,
+    onRefresh?: () => void,
 }
 
-const AssignmentCard = ({session, assignment, result}:Props) => {
+const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [assignmentAnswer, setAssignmentAnswer] = useState<AssignmentAnswer>();
     const [fileName, setFileName] = useState("");
     const [activeModal, setActiveModal] = useState<ModalType>(null);
-    const revalidator = useRevalidator();
     const {user} = useAuth()
 
     const fetchAnswer = async () => {
@@ -46,7 +46,7 @@ const AssignmentCard = ({session, assignment, result}:Props) => {
 
     const onSuccess = () => {
         setActiveModal(null);
-        revalidator.revalidate();
+        onRefresh?.();
     };
 
     const onChange = async (e:ChangeEvent<HTMLInputElement>) => {

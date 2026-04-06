@@ -1,5 +1,5 @@
 import { Copy, Edit, Trash } from "lucide-react";
-import { Link, useRevalidator } from "react-router";
+import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import EmptyMessage from "~/components/ui/empty-message";
 import type { Session } from "~/types/api";
@@ -13,6 +13,7 @@ type Props = {
   bootcampId: string;
   onUpdateSession: (session: Session) => void;
   onDeleteSession: (session: Session) => void;
+  onRefresh?: () => void;
 };
 
 const SessionsGrid = ({
@@ -20,8 +21,8 @@ const SessionsGrid = ({
   bootcampId,
   onUpdateSession,
   onDeleteSession,
+  onRefresh,
 }: Props) => {
-  const revalidator = useRevalidator();
 
   const copySession = async (session: Session) => {
     const toastId = toast.loading("Copying session...");
@@ -36,7 +37,7 @@ const SessionsGrid = ({
         },
       });
       toast.success("Session copied", { id: toastId });
-      revalidator.revalidate();
+      onRefresh?.();
     } catch (error) {
       toast.error(getErrorMessage(error), {
         id: toastId,

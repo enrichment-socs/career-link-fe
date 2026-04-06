@@ -1,5 +1,5 @@
 import TableLayout from "~/components/layouts/table-layout";
-import { Link, useNavigate, useRevalidator } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { TableCell, TableRow } from "../ui/table";
 import { useRole } from "~/provider/role-testing-provider";
 import { Button } from "../ui/button";
@@ -23,17 +23,17 @@ interface Props {
   testType: TestType;
   test: SessionTest | undefined;
   attempts: StudentScore[];
+  onRefresh?: () => void;
 }
 
-const TestCard = ({ sessionId, testType, test, attempts }: Props) => {
+const TestCard = ({ sessionId, testType, test, attempts, onRefresh }: Props) => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const revalidator = useRevalidator();
   const navigate = useNavigate()
   const {user} = useAuth()
 
   const onSuccess = () => {
     setActiveModal(null);
-    revalidator.revalidate();
+    onRefresh?.();
   };
 
   const takeTest = async () => {

@@ -9,17 +9,16 @@ import toast from "react-hot-toast";
 import { getErrorMessage } from "~/lib/error";
 import { updateAssignmentAnswer } from "~/features/assignment/api/answer/update-assignment-answer";
 import { updateAssignmentResult } from "~/features/assignment/api/result/update-assignment-result";
-import { useRevalidator } from "react-router";
 
 interface Props {
     assignment_id: string;
     user: User;
     answerFilePath?: string;
     result?: AssignmentResult;
+    onRefresh?: () => void;
 }
 
-const AssignmentAnswerRow = ({assignment_id, user,answerFilePath, result}: Props) => {
-    const revalidator = useRevalidator();
+const AssignmentAnswerRow = ({assignment_id, user, answerFilePath, result, onRefresh}: Props) => {
 
     const form = useForm<CreateAssignmentResultInput>({
             resolver: zodResolver(createAssignmentResultInputSchema),
@@ -57,7 +56,7 @@ const AssignmentAnswerRow = ({assignment_id, user,answerFilePath, result}: Props
                 },
             })
             toast.success(res.message, { id: toastId });
-            revalidator.revalidate();
+            onRefresh?.();
             form.reset();
         } catch (error) {
             toast.error(getErrorMessage(error), {

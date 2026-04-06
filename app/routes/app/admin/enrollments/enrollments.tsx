@@ -46,7 +46,7 @@ const Enrollments = ({loaderData}:Route.ComponentProps) => {
                 </Link>
                 <h2 className={'font-bold text-left w-full text-4xl text-slate-700 p-6 h-full'}>Enrolled Students</h2>
             </div>
-            <EnrollmentGrid enrollments={enrollments} bootcampId={bootcamp}/>
+            <EnrollmentGrid enrollments={enrollments} bootcampId={bootcamp} onRefresh={fetchEnrollment}/>
         </div>
     </>)
 }
