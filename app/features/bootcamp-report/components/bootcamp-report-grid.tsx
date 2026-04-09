@@ -36,7 +36,7 @@ const displayMaxScoreAttempt = (attempts: StudentAttempt[]) => {
 const validateEligibility = (enrollment: Enrollment, sessionCount: number) => {
   
     let clockInCount = enrollment.user.session_attendances.filter(e => e.attendance_type == 'clock_in').length 
-    let clockOutCount = enrollment.user.session_attendances.filter(e => e.attendance_type == 'clock_in').length
+    let clockOutCount = enrollment.user.session_attendances.filter(e => e.attendance_type == 'clock_out').length
     let assignmentSubmittedCount = enrollment.user.session_assignment_results.length
     let preTestSubmitted = displayMaxScoreAttempt(enrollment.user.student_attempts.filter(e => e.test.type == TestType.PRE_TEST)).length
     let assignmentGradeACount = enrollment.user.session_assignment_results.filter(e => e.result == AssignmentResultType.GOOD).length
