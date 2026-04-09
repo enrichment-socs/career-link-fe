@@ -13,10 +13,6 @@ import { Progress } from "~/components/ui/progress";
 import { createEvalAnswer } from "~/features/evaluation/api/create-evaluation-answer";
 import { getErrorMessage } from "~/lib/error";
 import {
-  isClockInOpen,
-  isClockInRange,
-  isClockOutOpen,
-  hasClockedIn,
   hasClockedOut,
 } from "~/lib/validation";
 import { useRole } from "~/provider/role-testing-provider";
@@ -107,8 +103,7 @@ const SessionTodolist = ({
     <>
       <div className={"flex flex-col gap-y-4 mb-8"}>
         {role == "user" ? (
-          ((isClockInOpen(session) && isClockInRange(session) && !hasClockedIn(attendances)) ||
-            (isClockOutOpen(session) && hasClockedIn(attendances) && !hasClockedOut(attendances))) && (
+          !hasClockedOut(attendances) && (
             <Button onClick={attendanceOnClick} className="cursor-pointer py-6">
               Session Clock In / Clock Out
             </Button>
