@@ -39,7 +39,7 @@ const UpdateSessionData = ({session, sessionData, onSuccess}:Props) => {
 
     return (<>
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className={"space-y-4"}>
                 <Field control={form.control} label="Link" name="link" placeholder="https://website.com/" />
                 <Field control={form.control} label="Description" name="description" placeholder="https://website.com/" />
                 <Button>Submit</Button>
