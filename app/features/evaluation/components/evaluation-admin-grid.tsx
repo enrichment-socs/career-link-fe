@@ -14,6 +14,7 @@ import { createEvalQuestionInputSchema, type CreateEvalQuestionInput } from "../
 import { Form } from "~/components/ui/form"
 import Field from "~/components/ui/form-field"
 import SelectField from "~/components/ui/select-field"
+import {deleteAllEvaluationQuestion} from "~/features/evaluation/api/delete-evaluation-question";
 
 
 interface Template {
@@ -31,7 +32,7 @@ interface Props {
 }
 
 
-const EvaluationAdminGrid = ({sessionId, id, onSuccess, questions}: Props) => {
+const EvaluationAdminGrid = ({sessionId, id, onSuccess,  questions}: Props) => {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [progress, setProgress] = useState(0)
@@ -62,6 +63,18 @@ const EvaluationAdminGrid = ({sessionId, id, onSuccess, questions}: Props) => {
         }
     }
 
+    const handleDeleteAllQuestion = async () => {
+        const toastId = toast.loading("Deleting all evaluation questions...")
+        try {
+            await deleteAllEvaluationQuestion(sessionId)
+            toast.success("All question deleted successfully", { id: toastId })
+            form.reset({ question: "", session_id: sessionId, type: "ratio" })
+            onSuccess()
+        } catch (error) {
+            toast.error(getErrorMessage(error), { id: toastId })
+        }
+    }
+
     const template: Template[]  = [{
         number: 1,
         question: "Rate your satisfaction on this bootcamp session",
@@ -70,7 +83,7 @@ const EvaluationAdminGrid = ({sessionId, id, onSuccess, questions}: Props) => {
     const importEval =  (e:ChangeEvent<HTMLInputElement>) => {
         const reader = new FileReader()
         reader.onload = (event) => importExcel<Template>(event, async (res) => {
-            const toastId = toast.loading(`Importing Test...`);
+            const toastId = toast.loading(`Importing Questions...`);
             try {
                 for (let i = 0;i< res.length;i++){
                     setProgress(prev => prev + 100 / res.length);
@@ -83,7 +96,7 @@ const EvaluationAdminGrid = ({sessionId, id, onSuccess, questions}: Props) => {
                     });
                 }
                 setProgress(100);
-                toast.success("Import Test Success!", { id: toastId })
+                toast.success("Import Questions Success!", { id: toastId })
                 onSuccess()
             } catch (error) {
                 toast.error(getErrorMessage(error), {
@@ -122,9 +135,11 @@ const EvaluationAdminGrid = ({sessionId, id, onSuccess, questions}: Props) => {
                         <h3 className="text-lg font-semibold text-primary mb-4">Add Question</h3>
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(handleCreate)} className="flex flex-col gap-4">
-                                <Field control={form.control} label="Question" name="question" placeholder="e.g. Rate your satisfaction on this session" type="text" />
-                                <SelectField control={form.control} label="Type" name="type" values={typeValues} />
-                                <Button type="submit" disabled={form.formState.isSubmitting} className={form.formState.isSubmitting ? "opacity-70 cursor-not-allowed" : ""}>
+                                <Field control={form.control} label="Question" name="question"
+                                       placeholder="e.g. Rate your satisfaction on this session" type="text"/>
+                                <SelectField control={form.control} label="Type" name="type" values={typeValues}/>
+                                <Button type="submit" disabled={form.formState.isSubmitting}
+                                        className={form.formState.isSubmitting ? "opacity-70 cursor-not-allowed" : ""}>
                                     {form.formState.isSubmitting ? "Adding..." : "+ Add Question"}
                                 </Button>
                             </form>
@@ -133,13 +148,25 @@ const EvaluationAdminGrid = ({sessionId, id, onSuccess, questions}: Props) => {
                     <div className="bg-white rounded-lg shadow-md p-5">
                         <h3 className="text-lg font-semibold text-primary mb-4">Import from Excel</h3>
                         <div className="grid grid-cols-2 gap-3">
-                            <Button onClick={() => exportToExcel('template', template)} className="bg-purple-500 hover:bg-purple-400">
+                            <Button onClick={() => exportToExcel('template', template)}
+                                    className="bg-purple-500 hover:bg-purple-400">
                                 Download Template
                             </Button>
-                            <label htmlFor="file" className="bg-green-600 hover:bg-green-500 px-2 text-sm rounded-md text-white flex items-center justify-center cursor-pointer">
+                            <label htmlFor="file"
+                                   className="bg-green-600 hover:bg-green-500 px-2 text-sm rounded-md text-white flex items-center justify-center cursor-pointer">
                                 Import Evaluation
                             </label>
                             <input type="file" name="" id="file" ref={fileInputRef} hidden onChange={importEval}/>
+                        </div>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-md p-5">
+                        <h3 className="text-lg font-semibold text-primary mb-4">Question Management</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Button onClick={handleDeleteAllQuestion}
+                                    className="bg-red-500 hover:bg-red-400">
+                                Delete All Questions
+                            </Button>
+
                         </div>
                     </div>
                 </div>
