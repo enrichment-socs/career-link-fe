@@ -93,6 +93,12 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
     const {role} = useRole()
     console.log(assignmentAnswer)
 
+    const getAssignmentLink = (path?: string) => {
+        if (!path) return ""
+        if (/^https?:\/\//i.test(path)) return path
+        return `${import.meta.env.VITE_STORAGE_URL}${path}`
+    }
+
     return (
         <>
             <Modal 
@@ -113,7 +119,7 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
                 <h4>Starts on : {format(assignment.open_date, "dd-MM-yyyy HH:mm")}</h4>
                 <h4>Deadline  : {format(assignment.close_date, "dd-MM-yyyy HH:mm")}</h4>
                 <p>The assignment can be downloaded from the button below</p>
-                <a href={`${import.meta.env.VITE_STORAGE_URL}${assignment.question_file_path}`} download target="_blank" className="w-1/3">
+                <a href={getAssignmentLink(assignment.question_file_path)} download target="_blank" className="w-1/3">
                     <Button variant={'outline'} className="w-full h-10">
                         <div className="flex gap-2 items-center justify-between w-full">
                             <div className="flex items-center gap-2">
@@ -126,7 +132,7 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
                 </a>
                 {(user?.name == 'admin' || (assignment.is_shared && new Date().getTime() > new Date(assignment.close_date).getTime())) ? <>
                     <p>The assignment's answer can be downloaded from the button below</p>
-                    <a href={`${import.meta.env.VITE_STORAGE_URL}${assignment.answer_file_path}`} download target="_blank">
+                    <a href={getAssignmentLink(assignment.answer_file_path)} download target="_blank">
                         <Button variant={'outline'} className="w-1/3 h-10">
                             <div className="flex gap-2 items-center justify-between w-full">
                                 <div className="flex items-center gap-2">
