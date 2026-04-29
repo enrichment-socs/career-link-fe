@@ -12,6 +12,7 @@ import toast from "react-hot-toast"
 import { createCertificate } from "~/features/certificates/api/create-certificate"
 import { Progress } from "~/components/ui/progress"
 import { exportToExcel } from "~/lib/excel"
+import { Checkbox } from "~/components/ui/checkbox"
 
 interface Props {
     enrollments: Enrollment[]
@@ -33,19 +34,74 @@ const displayMaxScoreAttempt = (attempts: StudentAttempt[]) => {
   return res
 }
 
-const validateEligibility = (enrollment: Enrollment, sessionCount: number) => {
-  
-    let clockInCount = enrollment.user.session_attendances.filter(e => e.attendance_type == 'clock_in').length 
-    let clockOutCount = enrollment.user.session_attendances.filter(e => e.attendance_type == 'clock_out').length
-    let assignmentSubmittedCount = enrollment.user.session_assignment_results.length
-    let preTestSubmitted = displayMaxScoreAttempt(enrollment.user.student_attempts.filter(e => e.test.type == TestType.PRE_TEST)).length
-    let assignmentGradeACount = enrollment.user.session_assignment_results.filter(e => e.result == AssignmentResultType.GOOD).length
-    let postTestPassed = displayMaxScoreAttempt(enrollment.user.student_attempts.filter(e => e.test.type == TestType.POST_TEST)).filter(e => e.score && e.score.score >= e.test.minimum_score).length
-    
-    if ([clockInCount, clockOutCount, assignmentGradeACount, preTestSubmitted, assignmentSubmittedCount, postTestPassed].some(e => e < Math.floor(sessionCount / 2))) {
+interface EligibilityCriteria {
+    clockIn: boolean
+    clockOut: boolean
+    preTest: boolean
+    postTest: boolean
+    assignmentSubmitted: boolean
+    assignmentGradeA: boolean
+}
+
+const getEligibilityMetrics = (enrollment: Enrollment) => {
+    const clockInCount = enrollment.user.session_attendances.filter(e => e.attendance_type == 'clock_in').length 
+    const clockOutCount = enrollment.user.session_attendances.filter(e => e.attendance_type == 'clock_out').length
+    const assignmentSubmittedCount = enrollment.user.session_assignment_results.length
+    const preTestSubmitted = displayMaxScoreAttempt(enrollment.user.student_attempts.filter(e => e.test.type == TestType.PRE_TEST)).length
+    const assignmentGradeACount = enrollment.user.session_assignment_results.filter(e => e.result == AssignmentResultType.GOOD).length
+    const postTestPassed = displayMaxScoreAttempt(enrollment.user.student_attempts.filter(e => e.test.type == TestType.POST_TEST)).filter(e => e.score && e.score.score >= e.test.minimum_score).length
+
+    return {
+        clockInCount,
+        clockOutCount,
+        assignmentSubmittedCount,
+        preTestSubmitted,
+        assignmentGradeACount,
+        postTestPassed,
+    }
+}
+
+const evaluateEligibility = (
+    metrics: ReturnType<typeof getEligibilityMetrics>,
+    sessionCount: number,
+    criteria: EligibilityCriteria
+) => {
+    const requiredCounts: number[] = []
+    const fullCounts: number[] = []
+
+    if (criteria.clockIn) {
+        requiredCounts.push(metrics.clockInCount)
+        fullCounts.push(metrics.clockInCount)
+    }
+    if (criteria.clockOut) {
+        requiredCounts.push(metrics.clockOutCount)
+        fullCounts.push(metrics.clockOutCount)
+    }
+    if (criteria.preTest) {
+        requiredCounts.push(metrics.preTestSubmitted)
+        fullCounts.push(metrics.preTestSubmitted)
+    }
+    if (criteria.postTest) {
+        requiredCounts.push(metrics.postTestPassed)
+        fullCounts.push(metrics.postTestPassed)
+    }
+    if (criteria.assignmentSubmitted) {
+        requiredCounts.push(metrics.assignmentSubmittedCount)
+        fullCounts.push(metrics.assignmentSubmittedCount)
+    }
+    if (criteria.assignmentGradeA) {
+        requiredCounts.push(metrics.assignmentGradeACount)
+        fullCounts.push(metrics.assignmentGradeACount)
+    }
+
+    if (requiredCounts.length === 0) return 1
+
+    const minimumRequired = Math.max(1, Math.floor(sessionCount / 2))
+
+    if (requiredCounts.some(e => e < minimumRequired)) {
         return 0
     }
-    if ([clockInCount, clockOutCount, assignmentGradeACount, preTestSubmitted, postTestPassed].every(e => e == sessionCount)){
+    if (sessionCount > 0 && fullCounts.every(e => e == sessionCount)) {
         return 2
     }
     return 1
@@ -54,28 +110,46 @@ const validateEligibility = (enrollment: Enrollment, sessionCount: number) => {
 
 const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onRefresh}:Props) => {
     
-    const [selected, setSelected] = useState<string[]>(enrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? '')).map(_ => ""))
+    const [selected, setSelected] = useState<string[]>([])
     const [progress, setProgress] = useState(0)
-    const [isEligible, _] = useState(enrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? '')).map(e => validateEligibility(e, session)))
     const [searchTerm, setSearchTerm] = useState("")
+    const [criteria, setCriteria] = useState<EligibilityCriteria>({
+        clockIn: true,
+        clockOut: true,
+        preTest: true,
+        postTest: true,
+        assignmentSubmitted: true,
+        assignmentGradeA: true,
+    })
+
+    const sortedEnrollments = useMemo(() => (
+        enrollments.slice().sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? ''))
+    ), [enrollments])
 
     const filteredEnrollments = useMemo(() => {
         const term = searchTerm.toLowerCase()
-        if (!term) return enrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? ''))
-        return enrollments.sort((a, b) => compare(a.user.nim ?? '', b.user.nim ?? '')).filter((e) =>
+        if (!term) return sortedEnrollments
+        return sortedEnrollments.filter((e) =>
             (e.user.nim ?? "").toLowerCase().includes(term) ||
             e.user.name.toLowerCase().includes(term)
         )
-    }, [enrollments, searchTerm])
+    }, [sortedEnrollments, searchTerm])
+
+    const eligibilityByUserId = useMemo(() => {
+        return sortedEnrollments.reduce<Record<string, number>>((acc, enrollment) => {
+            const metrics = getEligibilityMetrics(enrollment)
+            acc[enrollment.user_id] = evaluateEligibility(metrics, session, criteria)
+            return acc
+        }, {})
+    }, [sortedEnrollments, session, criteria])
 
     const onSelect = (e: Enrollment, idx:number) => {
-        setSelected(selected.map((val, index) => {
-            if (index == idx) {
-                if (val == e.user_id) return ""
-                return e.user_id
+        setSelected((prev) => {
+            if (prev.includes(e.user_id)) {
+                return prev.filter((id) => id !== e.user_id)
             }
-            return val
-        }))
+            return [...prev, e.user_id]
+        })
         
     }
 
@@ -96,17 +170,17 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
     }
 
     const selectAll = () => {
-        setSelected(enrollments.map((e, idx) => {
-            if (isEligible[idx] != 0 && !certificates.includes(e.user_id)) return e.user_id
-            return ""
-        }))
+        const eligibleIds = sortedEnrollments
+            .filter((e) => eligibilityByUserId[e.user_id] != 0 && !certificates.includes(e.user_id))
+            .map((e) => e.user_id)
+        setSelected(eligibleIds)
     }
 
     const generateAll = async () => {
 
     const toastId = toast.loading("Generating certificate...")
     
-    if (selected.filter(e => e!= '').length == 0) {
+    if (selected.length == 0) {
         toast.error(`You must select the user!`, {
             id: toastId
         })
@@ -114,16 +188,15 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
     }
 
     try {
-      for (let i = 0;i < selected.length;i++){
-        if (selected[i] == "") continue
+            for (let i = 0;i < selected.length;i++){
         await createCertificate({
             data: {
             bootcamp_id: bootcampid,
-            user_id: selected[i],
-            type: isEligible[i] == 2? CertificateType.PREMIUM:CertificateType.NORMAL,
+                        user_id: selected[i],
+                        type: eligibilityByUserId[selected[i]] == 2? CertificateType.PREMIUM:CertificateType.NORMAL,
             }
         })
-        setProgress(prev => prev + 100 / selected.filter(e => e != "").length);
+                setProgress(prev => prev + 100 / selected.length);
       }
       setProgress(100)
       toast.success(`Generate certificate for selected user success!`, {
@@ -158,7 +231,7 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
         {
             enrollments.length < 1 ? <EmptyMessage text="There is no enrolled student here" title="No Enrolled Student"/>:
             <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center border bg-white px-3 py-2 rounded-md flex-1 max-w-sm">
                         <CiSearch className="text-gray-500 text-xl" />
                         <input
@@ -169,20 +242,54 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
+                    <div className="flex flex-wrap items-center gap-3 bg-white rounded-lg shadow-sm px-4 py-2">
+                        <span className="text-sm font-semibold">Eligibility Criteria:</span>
+                        <label className="flex items-center gap-2 text-sm">
+                            <Checkbox checked={criteria.clockIn} onCheckedChange={(checked) => setCriteria({ ...criteria, clockIn: Boolean(checked) })} />
+                            Clock In
+                        </label>
+                        <label className="flex items-center gap-2 text-sm">
+                            <Checkbox checked={criteria.clockOut} onCheckedChange={(checked) => setCriteria({ ...criteria, clockOut: Boolean(checked) })} />
+                            Clock Out
+                        </label>
+                        <label className="flex items-center gap-2 text-sm">
+                            <Checkbox checked={criteria.preTest} onCheckedChange={(checked) => setCriteria({ ...criteria, preTest: Boolean(checked) })} />
+                            Pre Test Submitted
+                        </label>
+                        <label className="flex items-center gap-2 text-sm">
+                            <Checkbox checked={criteria.postTest} onCheckedChange={(checked) => setCriteria({ ...criteria, postTest: Boolean(checked) })} />
+                            Post Test Passed
+                        </label>
+                        <label className="flex items-center gap-2 text-sm">
+                            <Checkbox checked={criteria.assignmentSubmitted} onCheckedChange={(checked) => setCriteria({ ...criteria, assignmentSubmitted: Boolean(checked) })} />
+                            Assignment Submitted
+                        </label>
+                        <label className="flex items-center gap-2 text-sm">
+                            <Checkbox checked={criteria.assignmentGradeA} onCheckedChange={(checked) => setCriteria({ ...criteria, assignmentGradeA: Boolean(checked) })} />
+                            Assignment Grade A
+                        </label>
+                    </div>
                     <Button onClick={exportResult} variant={'success'}>Export to Excel</Button>
-                    <Button onClick={selectAll} variant={'accent'}>Select All</Button>
+                    <Button onClick={selectAll} variant={'accent'}>Select by Criteria</Button>
                     <Button onClick={generateAll}>Generate</Button>
-                    {selected.filter(e => e != "").length + " Selected"}
+                    {selected.length + " Selected"}
                 </div>
                 {progress > 0 && <Progress value={progress} className="w-full"/>}
                 <TableLayout
                     header = {<ReportDataTableHeader />}
                 >
-                    {filteredEnrollments.map(
-                    (e, idx) => (
-                        <StudentReportRow hasCertificate={certificates.includes(e.user_id)} cur={1} idx={idx} e={e} sessionCount={session} onSelect={onSelect} isSelected={selected[idx] != ""} isEligible={isEligible[idx]}/>
-                    )
-                    )}
+                    {filteredEnrollments.map((e, idx) => (
+                        <StudentReportRow
+                            hasCertificate={certificates.includes(e.user_id)}
+                            cur={1}
+                            idx={idx}
+                            e={e}
+                            sessionCount={session}
+                            onSelect={onSelect}
+                            isSelected={selected.includes(e.user_id)}
+                            isEligible={eligibilityByUserId[e.user_id] ?? 0}
+                        />
+                    ))}
                 </TableLayout>
             </div>
         }
