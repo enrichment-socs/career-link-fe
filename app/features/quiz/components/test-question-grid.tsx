@@ -93,10 +93,93 @@ const TestQuestionGrid = ({questions, id, activeModal, onCreate, onConfirmDelete
         }
     }
 
+    const parseTxtQuestions = (content: string): Template[] => {
+        const lines = content
+            .replace(/\r\n/g, "\n")
+            .split("\n")
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0)
+
+        const results: Template[] = []
+        let buffer: string[] = []
+
+        const flushBuffer = () => {
+            if (buffer.length < 6) {
+                buffer = []
+                return
+            }
+
+            const question = buffer[0]
+            const options: Record<"A" | "B" | "C" | "D", string> = {
+                A: "",
+                B: "",
+                C: "",
+                D: "",
+            }
+
+            for (let i = 1; i <= 4; i++) {
+                const match = buffer[i].match(/^([A-D])\)\s*(.+)$/)
+                if (match) {
+                    const key = match[1] as "A" | "B" | "C" | "D"
+                    options[key] = match[2]
+                }
+            }
+
+            const answerLine = buffer.find((line) => /^ANSWER:\s*[A-D]$/i.test(line))
+            if (!answerLine) {
+                buffer = []
+                return
+            }
+
+            const answer = answerLine.split(":")[1].trim().toUpperCase() as "A" | "B" | "C" | "D"
+
+            if (!question || !options.A || !options.B || !options.C || !options.D) {
+                buffer = []
+                return
+            }
+
+            results.push({
+                number: results.length + 1,
+                question,
+                A: options.A,
+                B: options.B,
+                C: options.C,
+                D: options.D,
+                answer,
+            })
+
+            buffer = []
+        }
+
+        lines.forEach((line) => {
+            buffer.push(line)
+            if (/^ANSWER:\s*[A-D]$/i.test(line)) {
+                flushBuffer()
+            }
+        })
+
+        return results
+    }
+
     const importTest = (e:ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
         const reader = new FileReader()
+        const isTxt = file.name.toLowerCase().endsWith(".txt")
+
+        if (isTxt) {
+            reader.onload = (event) => {
+                const text = (event.target?.result ?? "").toString()
+                const parsed = parseTxtQuestions(text)
+                mappingQuestion(parsed)
+            }
+            reader.readAsText(file)
+            return
+        }
+
         reader.onload = (event) => importExcel<Template>(event, (res) => mappingQuestion(res))
-        reader.readAsArrayBuffer(e.target.files![0])
+        reader.readAsArrayBuffer(file)
     }
 
     return (
@@ -145,7 +228,7 @@ const TestQuestionGrid = ({questions, id, activeModal, onCreate, onConfirmDelete
                     <label htmlFor="file" className="bg-green-600 hover:bg-green-500 px-2 rounded-md text-white flex items-center justify-center">
                         Import Test
                     </label>
-                    <input type="file" name="" id="file" hidden onChange={importTest}/>
+                    <input type="file" name="" id="file" accept=".xlsx,.xls,.txt" hidden onChange={importTest}/>
                 </div>
             </div>
         </>
