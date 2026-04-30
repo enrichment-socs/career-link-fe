@@ -33,7 +33,7 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
             ] = await Promise.all([
                 getBootcamp(loaderData.id),
                 getCertificateByBootcamp(loaderData.id),
-                getBootcampReportByBootcampId(loaderData.id)
+                getBootcampReportByBootcampId(loaderData.id, true)
             ])
 
             setCertificates(certificates.map(e => e.user_id))

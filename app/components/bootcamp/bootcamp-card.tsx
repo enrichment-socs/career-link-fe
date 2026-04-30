@@ -6,7 +6,7 @@ import { useRole } from "~/provider/role-testing-provider";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { Eye, Edit, Trash2, Users, Calendar, MapPin } from "lucide-react";
+import { Eye, Edit, Trash2, Users, Calendar, MapPin, TrendingUp } from "lucide-react";
 
 interface Props {
   bootcamp: Bootcamp;
@@ -57,6 +57,12 @@ export const BootcampCard = ({
 
                   {role === "admin" && (
                     <>
+                      <NavLink to={`/admin/bootcamps/${bootcamp.id}/progress`}>
+                        <Button variant="outline" size="sm">
+                          <TrendingUp className="w-4 h-4 mr-2" />
+                          Progress
+                        </Button>
+                      </NavLink>
                       <Button
                         variant="outline"
                         size="sm"
@@ -149,6 +155,14 @@ export const BootcampCard = ({
               View Details
             </Button>
           </NavLink>
+          {role === "admin" && (
+            <NavLink to={`/admin/bootcamps/${bootcamp.id}/progress`} className="block mt-2">
+              <Button variant="outline" className="w-full">
+                <TrendingUp className="w-4 h-4 mr-2" />
+                View Progress
+              </Button>
+            </NavLink>
+          )}
         </div>
       </CardContent>
     </Card>

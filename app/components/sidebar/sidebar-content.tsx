@@ -1,4 +1,4 @@
-import {Sidebar, SidebarMenu} from "~/components/ui/sidebar";
+import { SidebarMenu } from "~/components/ui/sidebar";
 import SidebarLink from "~/components/sidebar/sidebar-link";
 
 export default function SidebarContent() {
