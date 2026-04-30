@@ -3,11 +3,18 @@ import { api } from "~/lib/api-client";
 
 export const createAssignmentInputSchema = z.object({
   session_id: z.string().min(1, "Session ID is required"),
-  answer_file_path: z.string().url("Invalid answer link").optional(),
+  answer_file_path: z.preprocess(
+    (value) => {
+      if (typeof value !== "string") return value;
+      const trimmed = value.trim();
+      return trimmed === "" ? undefined : trimmed;
+    },
+    z.string().min(1, "Answer link is required").optional()
+  ),
   is_shared: z.boolean(),
   open_date: z.date(),
   close_date: z.date(),
-  question_file_path: z.string().url("Invalid question link").optional(),
+  question_file_path: z.string().min(1, "Question link is required"),
 });
 
 export type CreateAssignmentInput = z.infer<typeof createAssignmentInputSchema>;

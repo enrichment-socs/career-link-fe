@@ -32,6 +32,7 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
     const {user} = useAuth()
 
     const fetchAnswer = async () => {
+        if (!assignment?.id || !user?.id) return;
         try {
             const {data: answers} = await getAssignmentAnswerByUserAndAssignment(assignment?.id ?? "", user?.id!)
             setAssignmentAnswer(answers)
@@ -42,7 +43,7 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
 
     useEffect(() => {
         fetchAnswer()
-    }, [user])
+    }, [user?.id, assignment?.id])
 
     const onSuccess = () => {
         setActiveModal(null);
