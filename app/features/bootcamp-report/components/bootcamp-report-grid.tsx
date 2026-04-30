@@ -13,12 +13,13 @@ import { createCertificate } from "~/features/certificates/api/create-certificat
 import { Progress } from "~/components/ui/progress"
 import { exportToExcel } from "~/lib/excel"
 import { Checkbox } from "~/components/ui/checkbox"
+import { Modal } from "~/components/modal"
 
 interface Props {
     enrollments: Enrollment[]
     session: number
     bootcampid: string
-    certificates: string[]
+    certificates: Record<string, CertificateType[]>
     onRefresh?: () => void
 }
 
@@ -113,6 +114,7 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
     const [selected, setSelected] = useState<string[]>([])
     const [progress, setProgress] = useState(0)
     const [searchTerm, setSearchTerm] = useState("")
+    const [bulkModalOpen, setBulkModalOpen] = useState(false)
     const [criteria, setCriteria] = useState<EligibilityCriteria>({
         clockIn: true,
         clockOut: true,
@@ -143,6 +145,14 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
         }, {})
     }, [sortedEnrollments, session, criteria])
 
+    const gradeAEligibleByUserId = useMemo(() => {
+        return sortedEnrollments.reduce<Record<string, boolean>>((acc, enrollment) => {
+            const metrics = getEligibilityMetrics(enrollment)
+            acc[enrollment.user_id] = session > 0 && metrics.assignmentGradeACount === session
+            return acc
+        }, {})
+    }, [sortedEnrollments, session])
+
     const onSelect = (e: Enrollment, idx:number) => {
         setSelected((prev) => {
             if (prev.includes(e.user_id)) {
@@ -169,54 +179,85 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
         )))
     }
 
+    const hasCertificateType = (userId: string, type: CertificateType) =>
+        (certificates[userId] ?? []).includes(type)
+
     const selectAll = () => {
         const eligibleIds = sortedEnrollments
-            .filter((e) => eligibilityByUserId[e.user_id] != 0 && !certificates.includes(e.user_id))
+            .filter((e) => eligibilityByUserId[e.user_id] != 0)
             .map((e) => e.user_id)
         setSelected(eligibleIds)
     }
 
-    const generateAll = async () => {
+    const generateAll = async (type: "accomplished" | "grade_a") => {
 
-    const toastId = toast.loading("Generating certificate...")
-    
-    if (selected.length == 0) {
-        toast.error(`You must select the user!`, {
-            id: toastId
-        })
-        return
-    }
+        const toastId = toast.loading("Generating certificate...")
+        
+        if (selected.length == 0) {
+            toast.error(`You must select the user!`, {
+                id: toastId
+            })
+            return
+        }
 
-    try {
-            for (let i = 0;i < selected.length;i++){
-        await createCertificate({
-            data: {
-            bootcamp_id: bootcampid,
-                        user_id: selected[i],
-                        type: eligibilityByUserId[selected[i]] == 2? CertificateType.PREMIUM:CertificateType.NORMAL,
+        const eligibleIds = selected.filter((userId) => {
+            if (type === "grade_a") {
+                return gradeAEligibleByUserId[userId] && !hasCertificateType(userId, CertificateType.PREMIUM)
             }
+            return eligibilityByUserId[userId] != 0 && !hasCertificateType(userId, CertificateType.NORMAL)
         })
-                setProgress(prev => prev + 100 / selected.length);
-      }
-      setProgress(100)
-      toast.success(`Generate certificate for selected user success!`, {
-        id: toastId
-      })
-    } catch (error) {
-      toast.error(`Generate certificate for selected user failed!`, {
-        id: toastId
-      })
-      
-    }finally{
-        setTimeout(() => {
-            setProgress(0)
-            onRefresh?.()
-        }, 3000);
-    }
+
+        if (eligibleIds.length === 0) {
+            toast.error(`No selected users match the certificate criteria.`, {
+                id: toastId
+            })
+            return
+        }
+
+        try {
+            for (let i = 0;i < eligibleIds.length;i++){
+                await createCertificate({
+                    data: {
+                        bootcamp_id: bootcampid,
+                        user_id: eligibleIds[i],
+                        type: type === "grade_a" ? CertificateType.PREMIUM : CertificateType.NORMAL,
+                    }
+                })
+                setProgress(prev => prev + 100 / eligibleIds.length);
+            }
+            setProgress(100)
+            toast.success(`Generate certificate for selected user success!`, {
+                id: toastId
+            })
+        } catch (error) {
+            toast.error(`Generate certificate for selected user failed!`, {
+                id: toastId
+            })
+            
+        } finally {
+            setTimeout(() => {
+                setProgress(0)
+                onRefresh?.()
+            }, 3000);
+        }
     }
     
     
     return (<>
+        <Modal
+            title="Generate Certificate"
+            isOpen={bulkModalOpen}
+            onClose={() => setBulkModalOpen(false)}
+        >
+            <div className="flex flex-col gap-3">
+                <Button onClick={() => { setBulkModalOpen(false); generateAll("accomplished"); }}>
+                    Accomplished
+                </Button>
+                <Button variant="outline" onClick={() => { setBulkModalOpen(false); generateAll("grade_a"); }}>
+                    Grade A (All Assignments)
+                </Button>
+            </div>
+        </Modal>
         {/* <div className="flex items-center gap-10">
             <h4 className="text-2xl font-semibold">Legend:</h4>
             <div className="flex gap-5 items-center">
@@ -271,7 +312,7 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
                     </div>
                     <Button onClick={exportResult} variant={'success'}>Export to Excel</Button>
                     <Button onClick={selectAll} variant={'accent'}>Select by Criteria</Button>
-                    <Button onClick={generateAll}>Generate</Button>
+                    <Button onClick={() => setBulkModalOpen(true)}>Generate</Button>
                     {selected.length + " Selected"}
                 </div>
                 {progress > 0 && <Progress value={progress} className="w-full"/>}
@@ -280,7 +321,7 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
                 >
                     {filteredEnrollments.map((e, idx) => (
                         <StudentReportRow
-                            hasCertificate={certificates.includes(e.user_id)}
+                            certificateTypes={certificates[e.user_id] ?? []}
                             cur={1}
                             idx={idx}
                             e={e}
