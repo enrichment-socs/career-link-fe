@@ -1,7 +1,7 @@
 import { useRole } from "~/provider/role-testing-provider"
 import { Button } from "../ui/button"
 import { Modal, type ModalType } from "../modal"
-import { useEffect, useState, type ChangeEvent } from "react"
+import { useEffect, useState } from "react"
 import { Link } from "react-router"
 import CreateAssignment from "~/features/assignment/components/create-update-assignment"
 import type { Assignment, AssignmentAnswer, AssignmentResult, Session } from "~/types/api"
@@ -25,9 +25,8 @@ interface Props {
 }
 
 const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [assignmentAnswer, setAssignmentAnswer] = useState<AssignmentAnswer>();
-    const [fileName, setFileName] = useState("");
+    const [answerLink, setAnswerLink] = useState("");
     const [activeModal, setActiveModal] = useState<ModalType>(null);
     const {user} = useAuth()
 
@@ -50,44 +49,42 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
         onRefresh?.();
     };
 
-    const onChange = async (e:ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setPreviewUrl(URL.createObjectURL(file));
-            const toastId = toast.loading("Submitting Answer...");
-            try {
-                
-                const res = assignmentAnswer? await updateAssignmentAnswer({
-                    data:{
-                        answer_file: file,
-                        user_id: user?.id!,
-                        assignment_id: assignment!.id,
-                        answer_file_path: file.name
-                    },
-                    id: assignmentAnswer.id
-                }):await createAssignmentAnswer({
-                    data:{
-                        answer_file: file,
-                        user_id: user?.id!,
-                        assignment_id: assignment!.id,
-                        answer_file_path: file.name
-                    }
-                })
-                setFileName(res.data.id)
-                toast.success(res.message, { id: toastId });
-                onSuccess()
-                setAssignmentAnswer({
-                    id: res.data.id,
+    const submitAnswerLink = async () => {
+        if (!assignment?.id || !user?.id) return
+        const trimmed = answerLink.trim()
+        if (!trimmed) {
+            toast.error("Answer link is required")
+            return
+        }
+        const toastId = toast.loading("Submitting Answer...")
+        try {
+            const res = assignmentAnswer ? await updateAssignmentAnswer({
+                data: {
+                    answer_file_path: trimmed,
                     user_id: user?.id!,
-                    assignment_id: assignment?.id!,
-                    user: user!,
-                    answer_file_path: file.name,
-                })
-            } catch (error) {
+                    assignment_id: assignment!.id,
+                },
+                id: assignmentAnswer.id
+            }) : await createAssignmentAnswer({
+                data: {
+                    answer_file_path: trimmed,
+                    user_id: user?.id!,
+                    assignment_id: assignment!.id,
+                }
+            })
+            toast.success(res.message, { id: toastId })
+            onSuccess()
+            setAssignmentAnswer({
+                id: res.data.id,
+                user_id: user?.id!,
+                assignment_id: assignment?.id!,
+                user: user!,
+                answer_file_path: trimmed,
+            })
+        } catch (error) {
             toast.error(getErrorMessage(error), {
                 id: toastId,
-            });
-            }
+            })
         }
     }
 
@@ -119,18 +116,9 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
             {assignment? <>
                 <h4>Starts on : {format(assignment.open_date, "dd-MM-yyyy HH:mm")}</h4>
                 <h4>Deadline  : {format(assignment.close_date, "dd-MM-yyyy HH:mm")}</h4>
-                <p>The assignment can be downloaded from the button below</p>
-                <a href={getAssignmentLink(assignment.question_file_path)} download target="_blank" className="w-1/3">
-                    <Button variant={'outline'} className="w-full h-10">
-                        <div className="flex gap-2 items-center justify-between w-full">
-                            <div className="flex items-center gap-2">
-                                <File />
-                                <p className="font-regular">Question</p>
-                            </div>
-                            <Download />
-                        </div>
-                    </Button>    
-                </a>
+                <p>
+                    The assignment can be accessed <a href={getAssignmentLink(assignment.question_file_path)} target="_blank" className="text-blue-600 underline">here</a>.
+                </p>
                 {(user?.name == 'admin' || (assignment.is_shared && new Date().getTime() > new Date(assignment.close_date).getTime())) ? <>
                     <p>The assignment's answer can be downloaded from the button below</p>
                     <a href={getAssignmentLink(assignment.answer_file_path)} download target="_blank">
@@ -145,30 +133,19 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
                         </Button>    
                     </a>
                 </>:<>
-                    <p className=" mt-5 text-red-600">{`*Max file size 100MB\nSupports: .docx, .pdf`}</p>
-                    <div className="flex gap-5 items-center">
-                        <label htmlFor="file" className="w-1/5 bg-accent py-1 px-2 rounded-lg text-white h-10 flex items-center justify-center">
-                            <p>Upload Answer</p>
-                        </label>
-                        <input type="file" name="" id="file" hidden onChange={e => onChange(e)}/>
-                        {
-                            (assignmentAnswer) && 
-                            <a href={
-                                previewUrl? previewUrl: `${import.meta.env.VITE_STORAGE_URL}${assignmentAnswer.answer_file_path}`
-                            } download target="_blank" className="w-full">
-                                <Button variant={'outline'} className="w-full h-10">
-                                    <div className="flex gap-2 items-center justify-between w-full">
-                                        <div className="flex items-center gap-2">
-                                            <File />
-                                            <p className="font-regular">{assignmentAnswer? assignmentAnswer.answer_file_path :'Document Name'}</p>
-                                        </div>
-                                        <Download />
-                                    </div>
-                                </Button>    
-                            </a>
-                        }
+                    <p className="mt-5 text-red-600">
+                        Please submit your answer as a public link. Recheck and make sure the link is accessible by anyone.
+                    </p>
+                    <div className="flex gap-3 items-center">
+                        <input
+                            type="text"
+                            className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
+                            placeholder="https://..."
+                            value={answerLink}
+                            onChange={(e) => setAnswerLink(e.target.value)}
+                        />
+                        <Button onClick={submitAnswerLink} className="h-10">Submit Link</Button>
                     </div>
-                    
                 </>
                 }
                 {
@@ -179,7 +156,7 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
                             Your result: {result.result}
                         </p> 
                     </div>:
-                    (!assignmentAnswer && !previewUrl) && 
+                    (!assignmentAnswer) && 
                     <div className="bg-red-200 border-red-700 border-1 p-3 rounded-md flex items-center gap-3 w-2/5">
                         <AlertCircle className="text-red-700" />
                         <p className="text-md font-bold text-red-700">

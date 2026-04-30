@@ -4,10 +4,9 @@ import { z } from "zod";
 import { api } from "~/lib/api-client";
 
 export const updateAssignmentAnswerInputSchema = z.object({
-  answer_file_path: z.string().optional(),
+  answer_file_path: z.string().min(1, "Answer link is required"),
   user_id: z.string().min(1, "User id cant be empty"),
   assignment_id: z.string().min(1, "Assignment id cant be empty"),
-  answer_file: z.instanceof(File)
 });
 
 export type UpdateAssignmentAnswerInput = z.infer<typeof updateAssignmentAnswerInputSchema>;
@@ -18,15 +17,6 @@ export const updateAssignmentAnswer = ({
   data: UpdateAssignmentAnswerInput;
   id: string;
 }): Promise<{ data: { id: string }; message: string }> => {
-  let formData = new FormData();
-  for (let key in data) {
-    formData.append(key, data[key]);
-  }
-  
-  return api.post(`bootcamp/session_assignment_answer/${id}`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  return api.post(`bootcamp/session_assignment_answer/${id}`, data);
   
 };
