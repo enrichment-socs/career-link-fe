@@ -35,6 +35,7 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
         try {
             const {data: answers} = await getAssignmentAnswerByUserAndAssignment(assignment?.id ?? "", user?.id!)
             setAssignmentAnswer(answers)
+            setAnswerLink(answers?.answer_file_path ?? "")
         } catch (error) {
             console.log(error)
         }
