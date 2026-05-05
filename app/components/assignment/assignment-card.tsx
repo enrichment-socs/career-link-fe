@@ -132,19 +132,21 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
                             The submission deadline has passed. You can no longer submit a link.
                         </p>
                     ) : (
-                    <p className="mt-5 text-red-600">
-                        Please submit your answer as a public link. Recheck and make sure the link is accessible by anyone.
-                    </p>
-                    <div className="flex gap-3 items-center">
-                        <input
-                            type="text"
-                            className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
-                            placeholder="https://..."
-                            value={answerLink}
-                            onChange={(e) => setAnswerLink(e.target.value)}
-                        />
-                        <Button onClick={submitAnswerLink} className="h-10">Submit Link</Button>
-                    </div>
+                        <>
+                            <p className="mt-5 text-red-600">
+                                Please submit your answer as a public link. Recheck and make sure the link is accessible by anyone.
+                            </p>
+                            <div className="flex gap-3 items-center">
+                                <input
+                                    type="text"
+                                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
+                                    placeholder="https://..."
+                                    value={answerLink}
+                                    onChange={(e) => setAnswerLink(e.target.value)}
+                                />
+                                <Button onClick={submitAnswerLink} className="h-10">Submit Link</Button>
+                            </div>
+                        </>
                     )}
                 </>
                 }
