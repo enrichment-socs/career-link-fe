@@ -6,7 +6,7 @@ import { Link } from "react-router"
 import CreateAssignment from "~/features/assignment/components/create-update-assignment"
 import type { Assignment, AssignmentAnswer, AssignmentResult, Session } from "~/types/api"
 import EmptyMessage from "../ui/empty-message"
-import { AlertCircle, Download, File } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 import { createAssignmentAnswer } from "~/features/assignment/api/answer/create-assignment-answer"
 import toast from "react-hot-toast"
 import { getErrorMessage } from "~/lib/error"
@@ -120,18 +120,9 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
                     The assignment can be accessed <a href={getAssignmentLink(assignment.question_file_path)} target="_blank" className="text-blue-600 underline">here</a>.
                 </p>
                 {(user?.name == 'admin' || (assignment.is_shared && new Date().getTime() > new Date(assignment.close_date).getTime())) ? <>
-                    <p>The assignment's answer can be downloaded from the button below</p>
-                    <a href={getAssignmentLink(assignment.answer_file_path)} download target="_blank">
-                        <Button variant={'outline'} className="w-1/3 h-10">
-                            <div className="flex gap-2 items-center justify-between w-full">
-                                <div className="flex items-center gap-2">
-                                    <File />
-                                    <p className="font-regular">Answer</p>
-                                </div>
-                                <Download />
-                            </div>
-                        </Button>    
-                    </a>
+                    <p>
+                        The assignment's answer can be accessed <a href={getAssignmentLink(assignment.answer_file_path)} target="_blank" className="text-blue-600 underline">here</a>.
+                    </p>
                 </>:<>
                     <p className="mt-5 text-red-600">
                         Please submit your answer as a public link. Recheck and make sure the link is accessible by anyone.
