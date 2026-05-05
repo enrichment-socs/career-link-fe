@@ -147,7 +147,7 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
                             Your result: {result.result}
                         </p> 
                     </div>:
-                    (!assignmentAnswer) && 
+                    role == "user" && (!assignmentAnswer) && 
                     <div className="bg-red-200 border-red-700 border-1 p-3 rounded-md flex items-center gap-3 w-2/5">
                         <AlertCircle className="text-red-700" />
                         <p className="text-md font-bold text-red-700">
