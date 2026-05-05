@@ -98,6 +98,8 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
         return `${import.meta.env.VITE_STORAGE_URL}${path}`
     }
 
+    const isPastDeadline = assignment ? new Date().getTime() > new Date(assignment.close_date).getTime() : false
+
     return (
         <>
             <Modal 
@@ -120,11 +122,16 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
                 <p>
                     The assignment can be accessed <a href={getAssignmentLink(assignment.question_file_path)} target="_blank" className="text-blue-600 underline">here</a>.
                 </p>
-                {(user?.name == 'admin' || (assignment.is_shared && new Date().getTime() > new Date(assignment.close_date).getTime())) ? <>
+                {(user?.name == 'admin' || (assignment.is_shared && isPastDeadline)) ? <>
                     <p>
                         The assignment's answer can be accessed <a href={getAssignmentLink(assignment.answer_file_path)} target="_blank" className="text-blue-600 underline">here</a>.
                     </p>
                 </>:<>
+                    {isPastDeadline ? (
+                        <p className="mt-5 text-red-600">
+                            The submission deadline has passed. You can no longer submit a link.
+                        </p>
+                    ) : (
                     <p className="mt-5 text-red-600">
                         Please submit your answer as a public link. Recheck and make sure the link is accessible by anyone.
                     </p>
@@ -138,6 +145,7 @@ const AssignmentCard = ({session, assignment, result, onRefresh}:Props) => {
                         />
                         <Button onClick={submitAnswerLink} className="h-10">Submit Link</Button>
                     </div>
+                    )}
                 </>
                 }
                 {
