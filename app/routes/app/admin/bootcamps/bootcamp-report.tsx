@@ -67,11 +67,11 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
     const exportAnswers = async (
         label: string,
         filename: string,
-        loader: () => Promise<{ data: any[] }>
+        loader: () => Promise<any[]>
     ) => {
         const toastId = toast.loading(`Preparing ${label} export...`)
         try {
-            const { data } = await loader()
+            const data = await loader()
             if (!data.length) {
                 toast.error(`No ${label} data found.`, { id: toastId })
                 return
