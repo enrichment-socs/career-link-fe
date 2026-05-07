@@ -12,7 +12,7 @@ import { CertificateType } from "~/types/enum"
 import PageSpinner from "~/components/ui/page-spinner"
 import { Button } from "~/components/ui/button"
 import toast from "react-hot-toast"
-import { exportToExcel } from "~/lib/excel"
+import { exportToExcelBySheet } from "~/lib/excel"
 
 export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
 
@@ -67,7 +67,8 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
     const exportAnswers = async (
         label: string,
         filename: string,
-        loader: () => Promise<any[]>
+        loader: () => Promise<any[]>,
+        mapRow: (row: any) => Record<string, unknown>
     ) => {
         const toastId = toast.loading(`Preparing ${label} export...`)
         try {
@@ -76,7 +77,17 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
                 toast.error(`No ${label} data found.`, { id: toastId })
                 return
             }
-            exportToExcel(filename, data)
+            const sheets = data.reduce<Record<string, any[]>>((acc, row) => {
+                const sessionNumber = row.session_number ?? ""
+                const sessionTitle = row.session_title ?? "Session"
+                const sheetName = sessionNumber ? `${sessionNumber}. ${sessionTitle}` : sessionTitle
+
+                if (!acc[sheetName]) acc[sheetName] = []
+                acc[sheetName].push(mapRow(row))
+                return acc
+            }, {})
+
+            exportToExcelBySheet(filename, sheets)
             toast.success(`${label} export ready.`, { id: toastId })
         } catch (error) {
             console.error(error)
@@ -100,7 +111,15 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
                     onClick={() => exportAnswers(
                         "pre-test answers",
                         `${bootcampName || loaderData.id}-pretest-answers`,
-                        () => getBootcampPretestAnswers(loaderData.id)
+                        () => getBootcampPretestAnswers(loaderData.id),
+                        (row) => ({
+                            Nim: row.student_nim,
+                            Name: row.student_name,
+                            Attempt: row.attempt,
+                            DoneAt: row.done_at,
+                            Score: row.score,
+                            Status: row.status,
+                        })
                     )}
                 >
                     Download Pre-Test
@@ -110,7 +129,15 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
                     onClick={() => exportAnswers(
                         "post-test answers",
                         `${bootcampName || loaderData.id}-posttest-answers`,
-                        () => getBootcampPosttestAnswers(loaderData.id)
+                        () => getBootcampPosttestAnswers(loaderData.id),
+                        (row) => ({
+                            Nim: row.student_nim,
+                            Name: row.student_name,
+                            Attempt: row.attempt,
+                            DoneAt: row.done_at,
+                            Score: row.score,
+                            Status: row.status,
+                        })
                     )}
                 >
                     Download Post-Test
@@ -120,7 +147,13 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
                     onClick={() => exportAnswers(
                         "assignment answers",
                         `${bootcampName || loaderData.id}-assignment-answers`,
-                        () => getBootcampAssignmentAnswers(loaderData.id)
+                        () => getBootcampAssignmentAnswers(loaderData.id),
+                        (row) => ({
+                            Nim: row.student_nim,
+                            Name: row.student_name,
+                            Answer: row.answer_link,
+                            SubmittedAt: row.submitted_at,
+                        })
                     )}
                 >
                     Download Assignments
@@ -130,7 +163,13 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
                     onClick={() => exportAnswers(
                         "evaluation answers",
                         `${bootcampName || loaderData.id}-evaluation-answers`,
-                        () => getBootcampEvaluationAnswers(loaderData.id)
+                        () => getBootcampEvaluationAnswers(loaderData.id),
+                        (row) => ({
+                            Nim: row.student_nim,
+                            Name: row.student_name,
+                            Question: row.question,
+                            Answer: row.answer,
+                        })
                     )}
                 >
                     Download Evaluations
