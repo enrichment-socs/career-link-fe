@@ -4,6 +4,7 @@ import type { Session } from "~/types/api"
 import { Button } from "../ui/button"
 import { useRole } from "~/provider/role-testing-provider"
 import { Form } from "../ui/form"
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import {updateSession, type  UpdateSessionInput, updateSessionInputSchema } from "~/features/session/api/update-session"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -33,6 +34,17 @@ const SessionCard = ({session, onRefresh}:Props) => {
             end_date: new Date(session.end_date),
         },
       })
+
+    useEffect(() => {
+        form.reset({
+            title: session.title,
+            description: session.description,
+            session_number: ""+session.session_number,
+            bootcamp_id: session.bootcamp.id,
+            start_attendance_date: new Date(session.start_attendance_date),
+            end_date: new Date(session.end_date),
+        });
+    }, [form, session]);
 
     function handleChangeDate(name:string, date: Date | undefined) {
         const realName = name as "start_attendance_date" | "end_date";
@@ -64,7 +76,7 @@ const SessionCard = ({session, onRefresh}:Props) => {
         try {
             const res = await updateSession({data, id: session.id})
             toast.success(res.message, { id: toastId });
-            form.reset();
+            form.reset(data);
             onRefresh?.();
         } catch (error) {
             toast.error(getErrorMessage(error), {
