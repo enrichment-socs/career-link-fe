@@ -82,6 +82,13 @@ export type SessionData = {
   description: string;
 };
 
+export type SessionAnnouncement = {
+  id: string;
+  title: string;
+  description: string;
+  file_path: string;
+};
+
 export type Option = {
   id: string;
   option: string;

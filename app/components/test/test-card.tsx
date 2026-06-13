@@ -113,7 +113,6 @@ const TestCard = ({ sessionId, testType, test, attempts, onRefresh }: Props) => 
           </Modal>
           <TestInformationCard test={test} minimum_score={test.minimum_score} score={attempts.length > 0 ? Math.max(...attempts.map(e => Math.ceil(e.score))):0}/>
           {role == 'user' && <>
-          <h4></h4>
             <TableLayout header={<DefaultTableHeader columns={["Attempt", "Status", "Duration", "Score"]}/>}>
               {
                 attempts.length < 1?
@@ -133,7 +132,7 @@ const TestCard = ({ sessionId, testType, test, attempts, onRefresh }: Props) => 
             <div>
               <h4>Grading Method : Highest grade</h4>
               <h4>Attempts Allowed: {test.attempt_count}</h4>
-              <h4>Minimum passing score: {test.minimum_score}</h4>
+              <h4>Minimum Passing Score: {test.minimum_score}</h4>
             </div>
             <div className="flex gap-5 justify-start items-center">
               {role != "admin" ? (attempts.length < parseInt(test.attempt_count) && new Date(test.close_date).getTime() > new Date().getTime()) && (

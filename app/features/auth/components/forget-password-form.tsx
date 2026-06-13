@@ -11,31 +11,25 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { login, loginInputSchema, type LoginInput } from "~/lib/auth";
+import {forgetPassword, type ForgetPasswordInput, forgetPasswordInputSchema} from "~/lib/auth";
 import { getErrorMessage } from "~/lib/error";
-import Cookies from "js-cookie";
 
 interface Props {
   onSuccess: () => void;
 }
 
-export const LoginForm = ({ onSuccess }: Props) => {
-  const form = useForm<LoginInput>({
-    resolver: zodResolver(loginInputSchema),
+export const ForgetPasswordForm = ({ onSuccess }: Props) => {
+  const form = useForm<ForgetPasswordInput>({
+    resolver: zodResolver(forgetPasswordInputSchema),
     defaultValues: {
-      nim: "",
-      password: "",
+
     },
   });
 
-  const onSubmit = async (data: LoginInput) => {
-    const toastId = toast.loading("Logging in...");
+  const onSubmit = async (data: ForgetPasswordInput) => {
+    const toastId = toast.loading("Sending link to your email...");
     try {
-      const res = await login({ data });
-      Cookies.set("access_token", res.data.access_token, {
-        secure: true,
-        sameSite: "Strict",
-      });
+      const res = await forgetPassword({ data });
 
       toast.success(res.message, { id: toastId });
       onSuccess();
@@ -50,7 +44,7 @@ export const LoginForm = ({ onSuccess }: Props) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-4">
-          <p className="text-xl mb-2 font-bold text-center">Login</p>
+          <p className="text-xl mb-2 font-bold text-center">Forget Password</p>
           <FormField
             control={form.control}
             name="nim"
@@ -64,29 +58,15 @@ export const LoginForm = ({ onSuccess }: Props) => {
               </FormItem>
             )}
           ></FormField>
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="Password" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          ></FormField>
 
-            <p className={"text-sm text-center"}>Forget your password? <a href="/career-link/forget-password">Click here</a></p>
-            <Button
-                type="submit"
+          <Button
+            type="submit"
             disabled={form.formState.isSubmitting}
             className={
               form.formState.isSubmitting ? "opacity-70 cursor-not-allowed" : ""
             }
           >
-            {form.formState.isSubmitting ? "Signing in..." : "Sign in"}
+            {form.formState.isSubmitting ? "Sending email..." : "Send to Email"}
           </Button>
         </div>
       </form>

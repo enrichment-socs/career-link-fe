@@ -11,6 +11,7 @@ interface DropdownProps<T extends FieldValues, TId> {
     control?: Control<T>;
     name: FieldPath<T>;
     label: string;
+    isMultiple?:boolean;
     values: SelectValue<TId>[];
     defaultValue?: TId;
 }
@@ -20,6 +21,7 @@ export default function Dropdown<T extends FieldValues>({
      name,
      label,
      values,
+     isMultiple = false,
     defaultValue,
 }: DropdownProps<T, string>) {
     return (
@@ -42,6 +44,7 @@ export default function Dropdown<T extends FieldValues>({
                                 {...field}
                                 value={field.value ?? ""}
                                 className="w-full bg-white text-black border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-ring focus:outline-none"
+                                multiple={isMultiple}
                             >
                                 <option value="">Select an option</option>
                                 {values.map((e, idx) => (

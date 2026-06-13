@@ -9,6 +9,8 @@ import {
 export default [
   route("/", "components/layouts/auth-layout.tsx", [
     index("routes/auth/login.tsx"),
+    route("/reset-password", "routes/auth/reset-password.tsx"),
+    route("/forget-password", "routes/auth/forget-password.tsx"),
   ]),
   
   layout("components/layouts/navbar-layout.tsx", [
