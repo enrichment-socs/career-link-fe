@@ -11,6 +11,26 @@ const exportToExcel = (name:string, data:any) => {
     pkg.saveAs(blob, `${name}.xlsx`);
 };
 
+const exportToExcelBySheet = (name: string, sheets: Record<string, any[]>) => {
+    const workbook = XLSX.utils.book_new();
+
+    Object.entries(sheets).forEach(([rawSheetName, data]) => {
+        if (!data || data.length === 0) return;
+
+        const sanitized = rawSheetName
+            .replace(/[\\/?*\[\]:]/g, "-")
+            .slice(0, 31);
+        const sheetName = sanitized || "Sheet";
+
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+    });
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    pkg.saveAs(blob, `${name}.xlsx`);
+};
+
 function importExcel<T>(event: ProgressEvent<FileReader>, onSuccess:(res:T[]) => void) {
     if (event.target == null) return []
     
@@ -22,4 +42,4 @@ function importExcel<T>(event: ProgressEvent<FileReader>, onSuccess:(res:T[]) =>
     onSuccess(sheetData)
 }
 
-export {exportToExcel, importExcel}
+export {exportToExcel, exportToExcelBySheet, importExcel}

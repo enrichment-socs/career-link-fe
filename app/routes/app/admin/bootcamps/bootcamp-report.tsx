@@ -3,11 +3,16 @@ import { Link } from "react-router"
 import { FaArrowLeft } from "react-icons/fa"
 import BootcampReportGrid from "~/features/bootcamp-report/components/bootcamp-report-grid"
 import { getBootcampReportByBootcampId } from "~/features/bootcamp-report/api/get-bootcamp-report-by-bootcamp-id"
+import { getBootcampAssignmentAnswers, getBootcampEvaluationAnswers, getBootcampPosttestAnswers, getBootcampPretestAnswers } from "~/features/bootcamp-report/api/get-bootcamp-exports"
 import { getBootcamp } from "~/features/bootcamp/api/get-bootcamp"
 import { getCertificateByBootcamp } from "~/features/certificates/api/get-certificate-by-bootcamp"
 import { useEffect, useState } from "react"
 import { type Enrollment } from "~/types/api"
+import { CertificateType } from "~/types/enum"
 import PageSpinner from "~/components/ui/page-spinner"
+import { Button } from "~/components/ui/button"
+import toast from "react-hot-toast"
+import { exportToExcelBySheet } from "~/lib/excel"
 
 export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
 
@@ -18,10 +23,11 @@ export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
 
 const BootcampReport = ({loaderData}:Route.ComponentProps) => {
 
-    const [certificates, setCertificates] = useState<string[]>([])
+    const [certificates, setCertificates] = useState<Record<string, CertificateType[]>>({})
     const [sessionCount, setSessionCount] = useState(0)
     const [enrollments, setEnrollments] = useState<Enrollment[]>([])
     const [loading, setLoading] = useState(true)
+    const [bootcampName, setBootcampName] = useState("")
 
 
     const fetchBootcamp = async () => {
@@ -33,12 +39,18 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
             ] = await Promise.all([
                 getBootcamp(loaderData.id),
                 getCertificateByBootcamp(loaderData.id),
-                getBootcampReportByBootcampId(loaderData.id)
+                getBootcampReportByBootcampId(loaderData.id, true)
             ])
 
-            setCertificates(certificates.map(e => e.user_id))
+            const byUser = certificates.reduce<Record<string, CertificateType[]>>((acc, cert) => {
+                if (!acc[cert.user_id]) acc[cert.user_id] = []
+                acc[cert.user_id].push(cert.type as CertificateType)
+                return acc
+            }, {})
+            setCertificates(byUser)
             setSessionCount(bootcamp.sessions.length)
             setEnrollments(enrollments)
+            setBootcampName(bootcamp.short_name || bootcamp.name)
         } catch (e) {
             console.error(e);
         } finally {
@@ -51,6 +63,37 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
     }, [])  
 
     if (loading) return <PageSpinner />;
+
+    const exportAnswers = async (
+        label: string,
+        filename: string,
+        loader: () => Promise<any[]>,
+        mapRow: (row: any) => Record<string, unknown>
+    ) => {
+        const toastId = toast.loading(`Preparing ${label} export...`)
+        try {
+            const data = await loader()
+            if (!data.length) {
+                toast.error(`No ${label} data found.`, { id: toastId })
+                return
+            }
+            const sheets = data.reduce<Record<string, any[]>>((acc, row) => {
+                const sessionNumber = row.session_number ?? ""
+                const sessionTitle = row.session_title ?? "Session"
+                const sheetName = sessionNumber ? `${sessionNumber}. ${sessionTitle}` : sessionTitle
+
+                if (!acc[sheetName]) acc[sheetName] = []
+                acc[sheetName].push(mapRow(row))
+                return acc
+            }, {})
+
+            exportToExcelBySheet(filename, sheets)
+            toast.success(`${label} export ready.`, { id: toastId })
+        } catch (error) {
+            console.error(error)
+            toast.error(`Failed to export ${label}.`, { id: toastId })
+        }
+    }
     
     return (<>
     <div className="w-full">
@@ -62,6 +105,76 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
                 </button>
             </Link>
             <h2 className={'font-bold text-left w-full text-4xl text-slate-700 p-6 h-full'}>Student Report Summary</h2>
+            <div className="flex gap-2">
+                <Button
+                    variant="outline"
+                    onClick={() => exportAnswers(
+                        "pre-test answers",
+                        `${bootcampName || loaderData.id}-pretest-answers`,
+                        () => getBootcampPretestAnswers(loaderData.id),
+                        (row) => ({
+                            Nim: row.student_nim,
+                            Name: row.student_name,
+                            Attempt: row.attempt,
+                            DoneAt: row.done_at,
+                            Score: row.score,
+                            Status: row.status,
+                        })
+                    )}
+                >
+                    Download Pre-Test
+                </Button>
+                <Button
+                    variant="outline"
+                    onClick={() => exportAnswers(
+                        "post-test answers",
+                        `${bootcampName || loaderData.id}-posttest-answers`,
+                        () => getBootcampPosttestAnswers(loaderData.id),
+                        (row) => ({
+                            Nim: row.student_nim,
+                            Name: row.student_name,
+                            Attempt: row.attempt,
+                            DoneAt: row.done_at,
+                            Score: row.score,
+                            Status: row.status,
+                        })
+                    )}
+                >
+                    Download Post-Test
+                </Button>
+                <Button
+                    variant="outline"
+                    onClick={() => exportAnswers(
+                        "assignment answers",
+                        `${bootcampName || loaderData.id}-assignment-answers`,
+                        () => getBootcampAssignmentAnswers(loaderData.id),
+                        (row) => ({
+                            Nim: row.student_nim,
+                            Name: row.student_name,
+                            Answer: row.answer_link,
+                            SubmittedAt: row.submitted_at,
+                        })
+                    )}
+                >
+                    Download Assignments
+                </Button>
+                <Button
+                    variant="outline"
+                    onClick={() => exportAnswers(
+                        "evaluation answers",
+                        `${bootcampName || loaderData.id}-evaluation-answers`,
+                        () => getBootcampEvaluationAnswers(loaderData.id),
+                        (row) => ({
+                            Nim: row.student_nim,
+                            Name: row.student_name,
+                            Question: row.question,
+                            Answer: row.answer,
+                        })
+                    )}
+                >
+                    Download Evaluations
+                </Button>
+            </div>
         </div>
         <BootcampReportGrid bootcampid={loaderData.id} session={sessionCount} enrollments={enrollments} certificates={certificates} onRefresh={fetchBootcamp}/>
     </div>

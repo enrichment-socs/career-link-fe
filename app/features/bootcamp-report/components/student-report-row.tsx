@@ -8,6 +8,7 @@ import { TableCell, TableRow } from "~/components/ui/table";
 import { createCertificate } from "~/features/certificates/api/create-certificate";
 import type { Enrollment, StudentAttempt, User } from "~/types/api";
 import { AssignmentResultType, CertificateType, TestType } from "~/types/enum";
+import { Modal } from "~/components/modal";
 
 interface Props {
   idx: number;
@@ -17,7 +18,7 @@ interface Props {
   onSelect: (e: Enrollment, idx:number) => void;
   isSelected: boolean;
   isEligible: number;
-  hasCertificate: boolean;
+  certificateTypes: CertificateType[];
 }
 
 const displayMaxScoreAttempt = (attempts: StudentAttempt[]) => {
@@ -38,10 +39,16 @@ const displayOrDash = (value?: string, limit = 10) => {
 };
 
 
-const StudentReportRow = ({ idx, cur, onSelect, e, sessionCount, isSelected, isEligible, hasCertificate }: Props) => {
-  
+const StudentReportRow = ({ idx, cur, onSelect, e, sessionCount, isSelected, isEligible, certificateTypes }: Props) => {
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const generateCertificate = async (e: Enrollment) => {
+  const assignmentGradeACount = e?.user.session_assignment_results.filter(e => e.result == AssignmentResultType.GOOD).length ?? 0
+  const isGradeAEligible = sessionCount > 0 && assignmentGradeACount === sessionCount
+  const hasNormalCertificate = certificateTypes.includes(CertificateType.NORMAL)
+  const hasPremiumCertificate = certificateTypes.includes(CertificateType.PREMIUM)
+  const hasAnyCertificate = hasNormalCertificate || hasPremiumCertificate
+
+  const generateCertificate = async (e: Enrollment, type: "accomplished" | "grade_a") => {
 
     const toastId = toast.loading("Generating certificate...")
     
@@ -50,7 +57,7 @@ const StudentReportRow = ({ idx, cur, onSelect, e, sessionCount, isSelected, isE
         data: {
           bootcamp_id: e.bootcamp_id,
           user_id: e.user_id,
-          type: isEligible == 2? CertificateType.PREMIUM:CertificateType.NORMAL,
+          type: type === "grade_a" ? CertificateType.PREMIUM : CertificateType.NORMAL,
         }
       })
       toast.success(`Generate certificate for ${e.user.name} success!`, {
@@ -66,12 +73,40 @@ const StudentReportRow = ({ idx, cur, onSelect, e, sessionCount, isSelected, isE
   }
 
   const validateSelect = () => {
-    if (isEligible && !hasCertificate) onSelect(e, idx)
+    if (!hasAnyCertificate) onSelect(e, idx)
   }
   return (
-    <TableRow className={`shadow-md p-5 border-box bg-white rounded-lg items-center my-2 flex w-full ${isEligible?"":"bg-red-200 hover:bg-red-300"} ${!hasCertificate?"":"bg-green-200 hover:bg-green-300"}`}>
+    <>
+    <Modal
+      title="Generate Certificate"
+      isOpen={modalOpen}
+      onClose={() => setModalOpen(false)}
+    >
+      <div className="flex flex-col gap-3">
+        <Button
+          onClick={() => {
+            setModalOpen(false);
+            generateCertificate(e, "accomplished");
+          }}
+          disabled={isEligible === 0 || hasNormalCertificate}
+        >
+          Accomplished
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setModalOpen(false);
+            generateCertificate(e, "grade_a");
+          }}
+          disabled={!isGradeAEligible || hasPremiumCertificate}
+        >
+          Grade A (All Assignments)
+        </Button>
+      </div>
+    </Modal>
+    <TableRow className={`shadow-md p-5 border-box bg-white rounded-lg items-center my-2 flex w-full ${isEligible?"":"bg-red-200 hover:bg-red-300"} ${!hasAnyCertificate?"":"bg-green-200 hover:bg-green-300"}`}>
       <TableCell className="w-[3%] font-medium text-center">
-        <Checkbox onClick={validateSelect} checked={isSelected} className="border-black"/>
+        <Checkbox onCheckedChange={validateSelect} checked={isSelected} className="border-black"/>
       </TableCell>
 
       <TableCell className="w-[12%] text-center">{e?.user.nim ?? "-"}</TableCell>
@@ -102,11 +137,12 @@ const StudentReportRow = ({ idx, cur, onSelect, e, sessionCount, isSelected, isE
         {e?.user.session_assignment_results.filter(e => e.result == AssignmentResultType.GOOD).length ?? "-"}
       </TableCell>
       <TableCell className="w-[11%] text-center whitespace-normal break-words">
-        <Button className={` ${!hasCertificate?"":"bg-green-300 hover:bg-green-400 text-white"}`} disabled={!isEligible || hasCertificate} variant={`${isEligible?"outline":"destructive"}`} onClick={() => generateCertificate(e)}>
+        <Button className={` ${!hasAnyCertificate?"":"bg-green-300 hover:bg-green-400 text-white"}`} disabled={hasNormalCertificate && hasPremiumCertificate} variant={`${isEligible?"outline":"destructive"}`} onClick={() => setModalOpen(true)}>
           Generate
         </Button>
       </TableCell>
     </TableRow>
+    </>
   );
 };
 

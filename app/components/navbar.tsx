@@ -1,4 +1,3 @@
-import { SidebarTrigger } from "~/components/ui/sidebar";
 import { NavLink } from "react-router";
 import { useRole } from "~/provider/role-testing-provider";
 import { NavItem } from "./ui/nav-item";
@@ -37,7 +36,6 @@ export default function Navbar() {
     <>
       <div className="w-full bg-primary flex items-center justify-between px-3">
         <div className="flex items-center">
-          {/* <SidebarTrigger /> */}
           <NavLink to={"home"}>
             <h2 className="font-semibold text-white text-3xl mx-10">
               CareerLink

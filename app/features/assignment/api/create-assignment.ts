@@ -3,31 +3,18 @@ import { api } from "~/lib/api-client";
 
 export const createAssignmentInputSchema = z.object({
   session_id: z.string().min(1, "Session ID is required"),
-  answer_file_path: z.string().optional(),
+  answer_file_path: z.preprocess(
+    (value) => {
+      if (typeof value !== "string") return value;
+      const trimmed = value.trim();
+      return trimmed === "" ? undefined : trimmed;
+    },
+    z.string().min(1, "Answer link is required").optional()
+  ),
   is_shared: z.boolean(),
   open_date: z.date(),
   close_date: z.date(),
-  question_file_path: z.string().optional(),
-  question_file: z.instanceof(File).refine(
-      (file) =>
-        [
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          "application/pdf",
-          "text/plain",
-          "application/zip"
-        ].includes(file.type),
-      { message: "Invalid question file type" }
-    ),
-  answer_file: z.instanceof(File).refine(
-      (file) =>
-        [
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          "application/pdf",
-          "text/plain",
-          "application/zip"
-        ].includes(file.type),
-      { message: "Invalid answer file type" }
-    )
+  question_file_path: z.string().min(1, "Question link is required"),
 });
 
 export type CreateAssignmentInput = z.infer<typeof createAssignmentInputSchema>;
@@ -42,15 +29,17 @@ export const createAssignment = ({
   let formData = new FormData();
 
   for (let key in data) {
+    const value = data[key as keyof CreateAssignmentInput];
+    if (value === undefined || value === null) continue;
     if (key === 'is_shared') {
-      formData.append(key, data[key] == true ? "1" : "0");
+      formData.append(key, value == true ? "1" : "0");
     }else{
       if (key.includes('date')){
         let newKey = key as 'open_date' | 'close_date'
         let date = data[newKey]
         formData.append(key, date.toISOString())
       }else{
-        formData.append(key, data[key]);
+        formData.append(key, String(value));
       }
     }
   }

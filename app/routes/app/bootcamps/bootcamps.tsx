@@ -3,7 +3,6 @@ import { FaFilter } from "react-icons/fa";
 import { BootcampsCarousel } from "~/features/bootcamp/components/bootcamps-carousel";
 import { BootcampsGrid } from "~/features/bootcamp/components/bootcamps-grid";
 import type { Route } from "./+types/bootcamps";
-import { getBootcamps } from "~/features/bootcamp/api/get-bootcamps";
 import { getBootcampTypes } from "~/features/bootcamp-type/api/get-bootcamp-types";
 import { getBootcampCategories } from "~/features/bootcamp-category/api/get-bootcamp-categories";
 import { useEffect, useMemo, useState } from "react";
@@ -22,8 +21,17 @@ const Bootcamps = () => {
   const {user} = useAuth()
 
   useEffect(() => {
-    getBootcamps()
-      .then(e => setBootcamps(e.data))
+    if (!user?.id) {
+      setLoading(false)
+      return
+    }
+    getEnrollmentByUser(user.id)
+      .then(e => {
+        const enrolledBootcamps = e.data
+          .map(enrollment => enrollment.bootcamp)
+          .filter((b): b is Bootcamp => b !== null && b !== undefined)
+        setBootcamps(enrolledBootcamps)
+      })
       .catch(console.log)
       .finally(() => setLoading(false))
   }, [user?.id])

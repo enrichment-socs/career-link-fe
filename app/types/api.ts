@@ -206,6 +206,14 @@ export type EvaluationQuestion = {
   type: string;
 }
 
+export type EvaluationAnswer = {
+  id: string;
+  question_id: string;
+  session_id: string;
+  user_id: string;
+  answer: string;
+}
+
 export type AnnouncementReply = {
   id: string
   announcement_id: string

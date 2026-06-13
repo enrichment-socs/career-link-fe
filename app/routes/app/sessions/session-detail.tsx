@@ -72,6 +72,7 @@ const Session = ({loaderData}:Route.ComponentProps) => {
                 {data: sessionData},
                 {data: sessionAnnouncement},
                 {data: evaluationQuestions},
+                evaluationResult,
                 assignmentResult
             ] = await Promise.all([
                 getAttendanceByUserAndSession(session.id, user?.id!),
@@ -79,6 +80,7 @@ const Session = ({loaderData}:Route.ComponentProps) => {
                 getSessionDataBySession(session.id),
                 getSessionAnnouncementBySession(session.id).catch(() => ({data: undefined})),
                 getEvaluationQuestionBySession(loaderData.session),
+                getEvaluationQuestionBySession(loaderData.session).catch(() => ({ data: [] as EvaluationQuestion[] })),
                 getAssignment(session.id).catch(() => ({data: undefined}))
             ])
 
@@ -86,10 +88,24 @@ const Session = ({loaderData}:Route.ComponentProps) => {
             setSessionData(sessionData)
             setSessionAnnouncement(sessionAnnouncement)
             setEvaluationQuestions(evaluationQuestions)
+            setEvaluationQuestions(evaluationResult.data)
             setAssignment(assignmentResult.data)
 
-            const preTest = tests.filter(e => e.type == TestType.PRE_TEST)[0]
-            const postTest = tests.filter(e => e.type == TestType.POST_TEST)[0]
+            const normalizeTestType = (value: string) =>
+                value.toLowerCase().replace(/[\s-]+/g, "_")
+
+            const pickLatestTest = (type: TestType) => {
+                const matches = tests.filter(
+                    (e) => normalizeTestType(String(e.type)) === type
+                )
+                if (matches.length === 0) return undefined
+                return matches.sort(
+                    (a, b) => new Date(b.open_date).getTime() - new Date(a.open_date).getTime()
+                )[0]
+            }
+
+            const preTest = pickLatestTest(TestType.PRE_TEST)
+            const postTest = pickLatestTest(TestType.POST_TEST)
             setPretest(preTest)
             setPosttest(postTest)
 

@@ -6,9 +6,10 @@ interface Props {
     idx: number,
     question: EvaluationQuestion,
     setAnswer: (idx: number, answer:string) => void
+    value: string
 }
 
-const EvaluationCard = ({setAnswer, idx, question}:Props) => {
+const EvaluationCard = ({setAnswer, idx, question, value}:Props) => {
 
     return (
         <Card className="flex flex-row p-4 gap-2 w-full">
@@ -23,10 +24,20 @@ const EvaluationCard = ({setAnswer, idx, question}:Props) => {
                                 Array.from({ length: 5 }, (_, index) => index + 1).map((_, index) => 
                                     <div className="flex gap-2 w-full flex-col items-center">
                                         <h4 className="text-slate-700 text-lg font-bold p-0 m-0">{index + 1}</h4>
-                                        <input type="radio" name={`question-${idx}`} id="" onChange={() => setAnswer(idx, `${index + 1}`)}/>
+                                        <input
+                                            type="radio"
+                                            name={`question-${idx}`}
+                                            id=""
+                                            checked={value === `${index + 1}`}
+                                            onChange={() => setAnswer(idx, `${index + 1}`)}
+                                        />
                                     </div>
                                 ):
-                                <Textarea placeholder={"evaluation here..."} onChange={e => setAnswer(idx, e.target.value)}/>
+                                <Textarea
+                                    placeholder={"evaluation here..."}
+                                    value={value}
+                                    onChange={e => setAnswer(idx, e.target.value)}
+                                />
                             }
                         </div>
                     </div>

@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 import { getErrorMessage } from "~/lib/error";
 import { Form } from "~/components/ui/form";
 import { Button } from "~/components/ui/button";
-import FileField from "~/components/ui/file-field";
 import Field from "~/components/ui/form-field";
 import DatePicker from "~/components/ui/date-picker";
 import type { Assignment } from "~/types/api";
@@ -43,13 +42,6 @@ const CreateAssignment = ( {sessionId, assignment, onSuccess}:Props ) => {
         }
       };
 
-    const handleFile = (e: React.ChangeEvent<HTMLInputElement>, name:"question_file_path"|"answer_file_path") => {
-      const file = e.target.files?.[0];
-      if (file) {
-          form.setValue(name, file.name);
-      }
-    };
-
     function handleChangeDate(name:string, date: Date | undefined) {
       const realName = name as "close_date"|"open_date"
         if (date) {
@@ -74,8 +66,20 @@ const CreateAssignment = ( {sessionId, assignment, onSuccess}:Props ) => {
     return (
         <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FileField control={form.control} handlePreview={(e) => {handleFile(e, "question_file_path")}} label="Question File" name="question_file"/>
-            <FileField control={form.control} handlePreview={(e) => {handleFile(e, "answer_file_path")}} label="Answer File" name="answer_file"/>
+          <Field
+            control={form.control}
+            name="question_file_path"
+            type="text"
+            label="Question Link"
+            placeholder="https://..."
+          />
+          <Field
+            control={form.control}
+            name="answer_file_path"
+            type="text"
+            label="Answer Link"
+            placeholder="https://..."
+          />
             <Field
                 control={form.control}
                 name="is_shared"
