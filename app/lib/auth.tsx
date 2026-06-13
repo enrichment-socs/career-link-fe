@@ -16,6 +16,8 @@ export const loginInputSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+
+
 export type LoginInput = z.infer<typeof loginInputSchema>;
 
 export const login = ({
@@ -24,6 +26,32 @@ export const login = ({
   data: LoginInput;
 }): Promise<ApiResponse<AuthResponse>> => {
   return api.post("/user/login", data);
+};
+
+export type ForgetPasswordInput = z.infer<typeof forgetPasswordInputSchema>;
+export const forgetPasswordInputSchema = z.object({
+  nim: z.string().min(1, "NIM is required"),
+});
+
+export const forgetPassword = ({
+                        data,
+                      }: {
+  data: ForgetPasswordInput;
+}): Promise<ApiResponse<AuthResponse>> => {
+  return api.post("/user/send-email", data);
+};
+
+export type ResetPasswordInput = z.infer<typeof resetPasswordInputSchema>;
+export const resetPasswordInputSchema = z.object({
+  password: z.string().min(1, "Password is required"),
+});
+
+export const resetPassword = ({
+                                 data,
+                               }: {
+  data: ResetPasswordInput;
+}): Promise<ApiResponse<AuthResponse>> => {
+  return api.post("/user/send-email", data);
 };
 
 export const getUser = (): Promise<{ data: User }> => {

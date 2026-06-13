@@ -39,10 +39,10 @@ const UpdateSessionData = ({session, sessionData, onSuccess}:Props) => {
 
     return (<>
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className={"space-y-4"}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className={"space-y-4 flex flex-col justify-center"}>
                 <Field control={form.control} label="Link" name="link" placeholder="https://website.com/" />
-                <Field control={form.control} label="Description" name="description" placeholder="https://website.com/" />
-                <Button>Submit</Button>
+                <Field control={form.control} label="Description" name="description" placeholder="This link is for ..." />
+                <Button>Update</Button>
             </form>
         </Form>
     </>)

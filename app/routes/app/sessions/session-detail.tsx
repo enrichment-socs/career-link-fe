@@ -1,12 +1,18 @@
-import AccordionLayout from "~/components/layouts/accordion-layout";
-import TestCard from "~/components/test/test-card";
 import { getBootcampSession } from "~/features/session/api/get-session";
 import SessionCard from "~/components/session/session-card";
-import AssignmentCard from "~/components/assignment/assignment-card";
 import { TestType } from "~/types/enum";
 import { getSessionTest } from "~/features/quiz/api/get-test-by-session";
 import { getStudentAttemptByTest } from "~/features/quiz/api/attempt/get-student-attempt-by-test";
-import { type EvaluationQuestion, type SessionTest, type Assignment, type AssignmentAnswer, type Attendance, type Session, type StudentAttempt, type StudentScore, type SessionData } from "~/types/api";
+import {
+    type EvaluationQuestion,
+    type SessionTest,
+    type Assignment,
+    type Attendance,
+    type Session,
+    type StudentScore,
+    type SessionData,
+    type SessionAnnouncement
+} from "~/types/api";
 import { Button } from "~/components/ui/button";
 import { useEffect, useState } from "react";
 import { Modal, type ModalType } from "~/components/modal";
@@ -14,7 +20,6 @@ import EmptyMessage from "~/components/ui/empty-message";
 import SessionTodolist from "~/features/session/components/session-todolist";
 import { getAssignment } from "~/features/assignment/api/get-assignment";
 import { getSessionDataBySession } from "~/features/session-data/api/session_data_by_session_id";
-import { getAssignmentAnswerByUserAndAssignment } from "~/features/assignment/api/answer/get-assignment-answer-by-user-and-assignment";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "~/lib/error";
 import { createStudentAttendance } from "~/features/attendance/api/create-attendance";
@@ -27,6 +32,7 @@ import { useAuth } from "~/lib/auth";
 import TableLayout from "~/components/layouts/table-layout";
 import { TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import PageSpinner from "~/components/ui/page-spinner";
+import {getSessionAnnouncementBySession} from "~/features/session-announcement/api/session_announcement_by_session_id";
 
 export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
 
@@ -42,6 +48,7 @@ const Session = ({loaderData}:Route.ComponentProps) => {
 
     const [session, setSession] = useState<Session>()
     const [sessionData, setSessionData] = useState<SessionData[]>([])
+    const [sessionAnnouncement, setSessionAnnouncement] = useState<SessionAnnouncement>()
     const [assignment, setAssignment] = useState<Assignment>()
     const [preTest, setPretest] = useState<SessionTest>()
     const [postTest, setPosttest] = useState<SessionTest>()
@@ -55,26 +62,29 @@ const Session = ({loaderData}:Route.ComponentProps) => {
     
     
     const fetchAll = async () => {
+
         try {
             const { data: session } = await getBootcampSession(loaderData.session);
             setSession(session)
-
             const [
                 {data: myAttendances},
                 {data: tests},
                 {data: sessionData},
+                {data: sessionAnnouncement},
                 {data: evaluationQuestions},
                 assignmentResult
             ] = await Promise.all([
                 getAttendanceByUserAndSession(session.id, user?.id!),
                 getSessionTest(session.id),
                 getSessionDataBySession(session.id),
+                getSessionAnnouncementBySession(session.id).catch(() => ({data: undefined})),
                 getEvaluationQuestionBySession(loaderData.session),
                 getAssignment(session.id).catch(() => ({data: undefined}))
             ])
 
             setAttendances(myAttendances)
             setSessionData(sessionData)
+            setSessionAnnouncement(sessionAnnouncement)
             setEvaluationQuestions(evaluationQuestions)
             setAssignment(assignmentResult.data)
 
@@ -101,11 +111,10 @@ const Session = ({loaderData}:Route.ComponentProps) => {
     useEffect(() => {
         fetchAll()
     }, [user])
+
     
     if (loading) return <PageSpinner />;
     if (!session) return null
-
-
 
     const onSuccess = () => {
         setActiveModal(null);
@@ -182,13 +191,16 @@ const Session = ({loaderData}:Route.ComponentProps) => {
                 Clock {hasClockedIn(attendances) ? "Out" : "In"}
             </Button>
         </Modal>
+
+
         <div className={'flex flex-col w-full gap-y-4'}>
-            <SessionCard 
+            <SessionCard
                 session={session}
                 onRefresh={fetchAll}
             />
             <SessionTodolist 
                 attendances={attendances}
+                announcement={sessionAnnouncement}
                 session={session} 
                 sessionData={sessionData}
                 assignment={assignment}
