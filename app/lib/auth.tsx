@@ -34,24 +34,30 @@ export const forgetPasswordInputSchema = z.object({
 });
 
 export const forgetPassword = ({
-                        data,
-                      }: {
+  data,
+}: {
   data: ForgetPasswordInput;
-}): Promise<ApiResponse<AuthResponse>> => {
-  return api.post("/user/send-email", data);
+}): Promise<ApiResponse<null>> => {
+  return api.post("/user/forgot-password", data);
 };
 
 export type ResetPasswordInput = z.infer<typeof resetPasswordInputSchema>;
 export const resetPasswordInputSchema = z.object({
-  password: z.string().min(1, "Password is required"),
+  email: z.string(),
+  token: z.string(),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  password_confirmation: z.string().min(1, "Please confirm your password"),
+}).refine((data) => data.password === data.password_confirmation, {
+  message: "Passwords don't match",
+  path: ["password_confirmation"],
 });
 
 export const resetPassword = ({
-                                 data,
-                               }: {
+  data,
+}: {
   data: ResetPasswordInput;
-}): Promise<ApiResponse<AuthResponse>> => {
-  return api.post("/user/send-email", data);
+}): Promise<ApiResponse<null>> => {
+  return api.post("/user/reset-password", data);
 };
 
 export const getUser = (): Promise<{ data: User }> => {
