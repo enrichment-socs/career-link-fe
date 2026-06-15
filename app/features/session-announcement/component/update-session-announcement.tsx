@@ -7,6 +7,8 @@ import { Button } from "~/components/ui/button"
 import toast from "react-hot-toast"
 import { getErrorMessage } from "~/lib/error"
 import { updateSessionAnnouncement, updateSessionAnnouncementInputSchema, type UpdateSessionAnnouncementInput } from "../api/update-session-announcement"
+import {useState} from "react";
+import FileField from "~/components/ui/file-field";
 
 interface Props {
     session:Session,
@@ -15,6 +17,9 @@ interface Props {
 }
 
 const UpdateSessionAnnouncement = ({session, sessionAnnouncement, onSuccess}:Props) => {
+
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [fileType, setFileType] = useState<string | null>(null);
 
     const form = useForm<UpdateSessionAnnouncementInput>({
         resolver: zodResolver(updateSessionAnnouncementInputSchema),
@@ -37,12 +42,42 @@ const UpdateSessionAnnouncement = ({session, sessionAnnouncement, onSuccess}:Pro
         onSuccess()
     }
 
+    const handleImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setPreviewUrl(URL.createObjectURL(file));
+            setFileType(file.type);
+        }
+    };
+
     return (<>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className={"space-y-4 flex flex-col justify-center"}>
                 <Field control={form.control} label="Title" name="title" placeholder="Ex. Introduction" />
                 <Field control={form.control} label="Description" name="description" placeholder="This session is discussing about..." />
-                <Field control={form.control} placeholder="Attach File" label="File" type="file" name="file" />
+                <FileField
+                    control={form.control}
+                    handlePreview={handleImagePreview}
+                    label="Attach File"
+                    name="file"
+                />
+                {previewUrl && (
+                    <div className="mt-4">
+                        {fileType === "application/pdf" ? (
+                            <embed
+                                src={previewUrl}
+                                type="application/pdf"
+                                className="w-full h-96 rounded-md border"
+                            />
+                        ) : (
+                            <img
+                                src={previewUrl}
+                                alt="Preview"
+                                className="w-full max-h-32 object-cover rounded-md border"
+                            />
+                        )}
+                    </div>
+                )}
                 <Button>Update</Button>
             </form>
         </Form>

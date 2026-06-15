@@ -165,6 +165,10 @@ const SessionTodolist = ({
     onRefresh?.();
   };
 
+  const downloadAnnouncementFile = (file_path: string) => {
+    window.open(import.meta.env.VITE_STORAGE_URL+file_path, "_blank");
+  }
+
   return (
     <>
       <div className={"flex flex-col gap-y-4 mb-8"}>
@@ -184,7 +188,14 @@ const SessionTodolist = ({
             <AccordionLayout text={"Announcement"} defaultValue={"Announcement"}>
               <h2 className="font-bold text-xl mb-2">{announcement.title}</h2>
               <h4>{announcement.description}</h4>
-              {announcement.file_path }
+              {announcement.file_path && (
+                  <div className={"flex flex-row gap-2 items-center"}>
+                    <h4>Attached File</h4>
+                    <Button onClick={() => {downloadAnnouncementFile(announcement.file_path)}}>
+                      Download File
+                    </Button>
+                  </div>
+              ) }
               {role == "admin" && (
                   <div className={"flex flex-row gap-x-4"}>
                     <Button onClick={() => {setActiveModal('update') }}>Update Announcement</Button>

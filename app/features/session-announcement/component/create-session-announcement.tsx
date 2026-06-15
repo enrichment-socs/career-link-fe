@@ -7,6 +7,8 @@ import Field from "~/components/ui/form-field"
 import { Button } from "~/components/ui/button"
 import toast from "react-hot-toast"
 import { getErrorMessage } from "~/lib/error"
+import FileField from "~/components/ui/file-field";
+import {useState} from "react";
 
 interface Props {
     session:Session,
@@ -14,7 +16,8 @@ interface Props {
 }
 
 const CreateSessionAnnouncement = ({session, onSuccess}:Props) => {
-
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [fileType, setFileType] = useState<string | null>(null);
     const form = useForm<CreateSessionAnnouncementInput>({
         resolver: zodResolver(createSessionAnnouncementInputSchema),
         defaultValues: {
@@ -23,6 +26,14 @@ const CreateSessionAnnouncement = ({session, onSuccess}:Props) => {
             session_id: session.id
         }
     })
+
+    const handleImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setPreviewUrl(URL.createObjectURL(file));
+            setFileType(file.type);
+        }
+    };
 
     const onSubmit = async (data:CreateSessionAnnouncementInput) => {
         const toastId = toast.loading("Creating session announcement...")
@@ -41,7 +52,29 @@ const CreateSessionAnnouncement = ({session, onSuccess}:Props) => {
             <form onSubmit={form.handleSubmit(onSubmit)} className={"space-y-4 flex flex-col justify-center"}>
                 <Field control={form.control} label="Title" name="title" placeholder="Ex. Introduction" />
                 <Field control={form.control} label="Description" name="description" placeholder="This session is discussing about..." />
-                <Field control={form.control} placeholder="Attach File" label="File" type="file" name="file" />
+                <FileField
+                    control={form.control}
+                    handlePreview={handleImagePreview}
+                    label="Attach File"
+                    name="file"
+                />
+                {previewUrl && (
+                    <div className="mt-4">
+                        {fileType === "application/pdf" ? (
+                            <embed
+                                src={previewUrl}
+                                type="application/pdf"
+                                className="w-full h-96 rounded-md border"
+                            />
+                        ) : (
+                            <img
+                                src={previewUrl}
+                                alt="Preview"
+                                className="w-full max-h-32 object-cover rounded-md border"
+                            />
+                        )}
+                    </div>
+                )}
                 <Button>Create</Button>
             </form>
         </Form>
