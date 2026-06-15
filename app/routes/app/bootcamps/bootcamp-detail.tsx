@@ -12,6 +12,7 @@ import { getEnrollmentByUser } from "~/features/enrollments/api/get-enrollment-b
 import { useAuth } from "~/lib/auth";
 import EmptyMessage from "~/components/ui/empty-message";
 import PageSpinner from "~/components/ui/page-spinner";
+import {useRole} from "~/provider/role-testing-provider";
 
 export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
   const { data } = await getBootcamp(params.bootcamp);
@@ -24,6 +25,7 @@ const BootcampDetail = ({ loaderData }: Route.ComponentProps) => {
   const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null);
   const revalidator = useRevalidator();
   const { user } = useAuth();
+  const { role } = useRole();
 
   const bootcamp = loaderData.bootcamp;
 
@@ -63,7 +65,7 @@ const BootcampDetail = ({ loaderData }: Route.ComponentProps) => {
     return <PageSpinner />;
   }
 
-  if (!isEnrolled) {
+  if (!isEnrolled && role == 'user') {
     return (
       <div className="container flex flex-col items-center justify-center mt-10">
         <EmptyMessage

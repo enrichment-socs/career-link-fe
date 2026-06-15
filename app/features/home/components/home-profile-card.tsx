@@ -94,7 +94,7 @@ export const HomeProfileCard = () => {
                   <div className="text-center lg:text-left">
                       <h1 className="text-4xl font-bold text-primary mb-2">
                           {user?.name}
-                      </h1>
+               `       </h1>
                       <p className="text-xl text-muted-foreground">{user?.nim}</p>
                       <p className="text-large text-muted-foreground">GPA: {user?.gpa}</p>
                   </div>
