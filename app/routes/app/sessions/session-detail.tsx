@@ -57,8 +57,9 @@ const Session = ({loaderData}:Route.ComponentProps) => {
     const [attemptsPretest, setAttemptPretest] = useState<StudentScore[]>([])
     const [attemptsPosttest, setAttemptPosttest] = useState<StudentScore[]>([])
     const [attendances, setAttendances] = useState<Attendance[]>([])
-    const [activeModal, setActiveModal] = useState<ModalType>(null);    
+    const [activeModal, setActiveModal] = useState<ModalType>(null);
     const [loading, setLoading] = useState(true);
+    const [attendanceLoading, setAttendanceLoading] = useState(false);
     
     
     const fetchAll = async () => {
@@ -139,30 +140,33 @@ const Session = ({loaderData}:Route.ComponentProps) => {
 
 
     const takeAttendance = async () => {
+        if (attendanceLoading) return;
+        setAttendanceLoading(true);
         const type = hasClockedIn(attendances) ? 'clock_out' : 'clock_in' as const;
         const toastId = toast.loading("Submitting Attendance...");
-            try {
-                
-                const res = await createStudentAttendance({
-                    data: {
-                        attendance_type: type,
-                        session_id: session.id,
-                        user_id: user?.id!
-                    }
-                })
-                setAttendances([...attendances, {
-                    id: res.data.id,
+        try {
+            const res = await createStudentAttendance({
+                data: {
                     attendance_type: type,
                     session_id: session.id,
-                    user: user!,
-                    finished_at: new Date()
-                }])
-                toast.success(res.message, { id: toastId });
-                onSuccess()
-            } catch (error) {
+                    user_id: user?.id!
+                }
+            })
+            setAttendances([...attendances, {
+                id: res.data.id,
+                attendance_type: type,
+                session_id: session.id,
+                user: user!,
+                finished_at: new Date()
+            }])
+            toast.success(res.message, { id: toastId });
+            onSuccess()
+        } catch (error) {
             toast.error(getErrorMessage(error), {
                 id: toastId,
             });
+        } finally {
+            setAttendanceLoading(false);
         }
     }
 
@@ -173,10 +177,14 @@ const Session = ({loaderData}:Route.ComponentProps) => {
         </TableHeader>
     )
 
-    const getAttendance = (type: 'clock_in' | 'clock_out') => format(attendances.filter(e => e.attendance_type == type).sort((a,b) => 
-        new Date(type == 'clock_in'?a.finished_at:b.finished_at).getTime() - 
-        new Date(type == 'clock_in'?b.finished_at:a.finished_at).getTime()
-    )[0].finished_at, "dd/MM/yyyy HH:mm:ss")
+    const getAttendance = (type: 'clock_in' | 'clock_out') => {
+        const filtered = attendances.filter(e => e.attendance_type == type).sort((a, b) =>
+            new Date(type == 'clock_in' ? a.finished_at : b.finished_at).getTime() -
+            new Date(type == 'clock_in' ? b.finished_at : a.finished_at).getTime()
+        )
+        if (filtered.length === 0) return '-'
+        return format(filtered[0].finished_at, "dd/MM/yyyy HH:mm:ss")
+    }
 
     return (
     <>
@@ -185,14 +193,14 @@ const Session = ({loaderData}:Route.ComponentProps) => {
             isOpen={activeModal === "create"}
             onClose={() => setActiveModal(null)}
         >
-            {attendances.length > 0 ? <TableLayout header={attendanceHeader()} className="w-full my-10">
+            {hasClockedIn(attendances) ? <TableLayout header={attendanceHeader()} className="w-full my-10">
                 <TableRow className="grid grid-cols-2">
                     <TableCell className="p-5 text-center border-1 border-black">
-                        <h4>{getAttendance('clock_in')}</h4>           
+                        <h4>{getAttendance('clock_in')}</h4>
                     </TableCell>
                     <TableCell className="p-5 text-center border-1 border-black">
-                        {attendances.length > 1 && 
-                            <h4>{format(attendances.filter(e => e.attendance_type == 'clock_out').sort((a,b) => new Date(b.finished_at).getTime() - new Date(a.finished_at).getTime())[0].finished_at, "dd/MM/yyyy HH:mm:ss")}</h4>
+                        {hasClockedOut(attendances) &&
+                            <h4>{getAttendance('clock_out')}</h4>
                         }
                     </TableCell>
                 </TableRow>
@@ -200,11 +208,12 @@ const Session = ({loaderData}:Route.ComponentProps) => {
                 title="No Clock In / Clock Out yet." 
                 text="You haven't clocked in/out. Please click the button below to take attendance."
             />}
-            <Button 
+            <Button
                 className="w-full mt-5"
                 onClick={takeAttendance}
+                disabled={attendanceLoading}
             >
-                Clock {hasClockedIn(attendances) ? "Out" : "In"}
+                {attendanceLoading ? "Submitting..." : `Clock ${hasClockedIn(attendances) ? "Out" : "In"}`}
             </Button>
         </Modal>
 
