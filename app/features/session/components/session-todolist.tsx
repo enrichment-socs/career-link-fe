@@ -73,6 +73,7 @@ const SessionTodolist = ({
   const [progress, setProgress] = useState(0)
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const revalidator = useRevalidator();
+  const isFinalSession = session.title.toLowerCase().includes("final")
 
   const setAnswer = (idx:number, answer:string) => {
     setAnswers((prev) => {
@@ -275,8 +276,8 @@ const SessionTodolist = ({
         {(sessionData.length > 0 || role == 'admin') && (
             <AccordionLayout
                 text={"Material"}
-                isLocked={role == "user" && (!preTest || (preTest && attemptsPretest.length < 1))}
-                lockedMessage={`${preTest ? "Complete the Pre Test to unlock this section." : "No pre-test yet."}`}
+                isLocked={role == "user" && (!isFinalSession && preTest && attemptsPretest.length < 1)}
+                lockedMessage={`${!isFinalSession && preTest ? "Complete the Pre Test to unlock this section." : !sessionData && "Material is not available."}`}
             >
               <SessionDataCard sessionData={sessionData} session={session} onRefresh={onRefresh} />
             </AccordionLayout>
@@ -287,9 +288,9 @@ const SessionTodolist = ({
                 text={"Post Test"}
                 isLocked={
                     role == "user" &&
-                    (!preTest || (preTest && attemptsPretest.length < 1) || attendances.length < 1)
+                    (!isFinalSession && postTest && preTest && attemptsPretest.length < 1 && attendances.length < 1)
                 }
-                lockedMessage={`${postTest ? "Complete the Pre Test and Clock In to unlock this section." : "No post-test yet."}`}
+                lockedMessage={`${!isFinalSession && postTest ? "Complete the Pre Test and Clock In to unlock this section." : "No post-test yet."}`}
             >
               <TestCard
                   testType={TestType.POST_TEST}
@@ -304,8 +305,8 @@ const SessionTodolist = ({
         {(assignment || role == 'admin') && (
             <AccordionLayout
                 text={"Assignment"}
-                isLocked={role == "user" && (!postTest || (postTest && attemptsPretest.length < 1))}
-                lockedMessage={`${postTest ? "Complete the Post Test to unlock this section." : "No assignment yet."}`}
+                isLocked={role == "user" && (!isFinalSession && postTest && attemptsPretest.length < 1)}
+                lockedMessage={`${!isFinalSession && postTest ? "Complete the Post Test to unlock this section." : "No assignment yet."}`}
             >
               <AssignmentCard
                   session={session}
