@@ -108,6 +108,10 @@ export const CreateUpdateSession = ({ onSuccess, session, bootcamp }: Props) => 
           control={form.control} 
           label="End" 
         />
+         <p className={"text-sm"}>
+             Information:<br/>
+             If you want to bypass all steps inside session for students, please input key "Final" on your session name.
+         </p>
         
         <div className="flex gap-10 justify-end">
           <Button
