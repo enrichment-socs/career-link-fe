@@ -51,47 +51,28 @@ const GlobalEnrollmentGrid = ({ enrollments, onRefresh }: Props) => {
     const template: Template[] = [
         {
             email: "axel.kurniawan@binus.ac.id",
-            short_name: "NM,AS"
+            short_name: "NM"
         }
     ]
 
     const exportCurrentData = () => {
-        const grouped = new Map<string, string[]>()
-        for (const e of enrollments) {
-            const email = e.user?.email ?? ""
-            const sn = e.bootcamp?.short_name ?? ""
-            if (!email) continue
-            const existing = grouped.get(email)
-            if (existing) {
-                if (!existing.includes(sn)) existing.push(sn)
-            } else {
-                grouped.set(email, [sn])
-            }
-        }
-        const data = Array.from(grouped.entries()).map(([email, shortNames]) => ({
-            email,
-            short_name: shortNames.join(",")
+        const data = enrollments.map((e) => ({
+            email: e.user?.email ?? "",
+            short_name: e.bootcamp?.short_name ?? ""
         }))
         exportToExcel("all-enrolled-students", data.length > 0 ? data : template)
     }
 
     const mappingStudent = async (res: Template[]) => {
         const toastId = toast.loading("Enrolling students...")
-        const rows: { email: string; short_name: string }[] = []
-        for (const row of res) {
-            const shortNames = row.short_name.split(",").map((s) => s.trim()).filter(Boolean)
-            for (const sn of shortNames) {
-                rows.push({ email: row.email, short_name: sn })
-            }
-        }
 
-        for (let i = 0; i < rows.length; i++) {
+        for (let i = 0; i < res.length; i++) {
             try {
-                await createEnrollment(rows[i].email, "", rows[i].short_name)
+                await createEnrollment(res[i].email, "", res[i].short_name.trim())
             } catch (error) {
-                console.log(`Failed to enroll ${rows[i].email} to ${rows[i].short_name}: ${getErrorMessage(error)}`)
+                console.log(`Failed to enroll ${res[i].email} to ${res[i].short_name}: ${getErrorMessage(error)}`)
             }
-            setProgress((prev) => prev + 100 / rows.length)
+            setProgress((prev) => prev + 100 / res.length)
         }
         toast.success("Students imported", { id: toastId })
         setTimeout(() => {
