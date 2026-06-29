@@ -56,9 +56,21 @@ const GlobalEnrollmentGrid = ({ enrollments, onRefresh }: Props) => {
     ]
 
     const exportCurrentData = () => {
-        const data = enrollments.map((e) => ({
-            email: e.user?.email ?? "",
-            short_name: e.bootcamp?.short_name ?? ""
+        const grouped = new Map<string, string[]>()
+        for (const e of enrollments) {
+            const email = e.user?.email ?? ""
+            const sn = e.bootcamp?.short_name ?? ""
+            if (!email) continue
+            const existing = grouped.get(email)
+            if (existing) {
+                if (!existing.includes(sn)) existing.push(sn)
+            } else {
+                grouped.set(email, [sn])
+            }
+        }
+        const data = Array.from(grouped.entries()).map(([email, shortNames]) => ({
+            email,
+            short_name: shortNames.join(",")
         }))
         exportToExcel("all-enrolled-students", data.length > 0 ? data : template)
     }
