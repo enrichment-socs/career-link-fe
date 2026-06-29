@@ -35,8 +35,8 @@ export const ResetPasswordForm = ({ token, email, onSuccess }: Props) => {
     const toastId = toast.loading("Resetting your password...");
     try {
       const res = await resetPassword({ data });
-      toast.success(res.message, { id: toastId });
-      onSuccess();
+      toast.success("Password has been reset successfully", { id: toastId });
+      setTimeout(() => onSuccess(), 1500);
     } catch (error) {
       toast.error(getErrorMessage(error), { id: toastId });
     }

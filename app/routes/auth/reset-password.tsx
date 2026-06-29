@@ -1,10 +1,9 @@
-import { useNavigate, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import EmptyMessage from "~/components/ui/empty-message";
 import { useAuth } from "~/lib/auth";
 import { ResetPasswordForm } from "~/features/auth/components/reset-password-form";
 
 export const ResetPassword = () => {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const email = searchParams.get("email");
@@ -32,7 +31,7 @@ export const ResetPassword = () => {
     <ResetPasswordForm
       token={token}
       email={email}
-      onSuccess={() => navigate("/", { replace: true })}
+      onSuccess={() => { window.location.href = "/career-link/"; }}
     />
   );
 };
