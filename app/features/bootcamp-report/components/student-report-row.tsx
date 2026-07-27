@@ -99,7 +99,7 @@ const StudentReportRow = ({ idx, cur, onSelect, e, sessionCount, isSelected, isE
   }
 
   const validateSelect = () => {
-    if (!hasAnyCertificate) onSelect(e, idx)
+    onSelect(e, idx)
   }
   return (
     <>
