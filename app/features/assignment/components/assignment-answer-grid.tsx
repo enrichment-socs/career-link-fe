@@ -3,7 +3,7 @@ import { CiSearch } from "react-icons/ci";
 import toast from "react-hot-toast";
 import { exportToExcel, importExcel } from "~/lib/excel";
 import type { AssignmentAnswer, AssignmentResult, Enrollment } from "~/types/api";
-import { AssignmentResultType } from "~/types/enum";
+import { AssignmentBulkGradeType, AssignmentResultType } from "~/types/enum";
 import { updateAssignmentResult } from "../api/result/update-assignment-result";
 import { createAssignmentResult } from "../api/result/create-assignment-result";
 import { getErrorMessage } from "~/lib/error";
@@ -33,6 +33,7 @@ const AssignmentAnswerGrid = ({assignment, enrollments, results, answers, onRefr
     const [progress, setProgress] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [bulkGrade, setBulkGrade] = useState<AssignmentBulkGradeType | "">("");
 
     const filteredEnrollments = useMemo(() => {
         const term = searchTerm.toLowerCase();
@@ -85,6 +86,49 @@ const AssignmentAnswerGrid = ({assignment, enrollments, results, answers, onRefr
         reader.onload = (event) => importExcel<Template>(event, (res) => mappingGrade(res))
         reader.readAsArrayBuffer(e.target.files![0])
     }
+
+    const applyBulkGrade = async (grade: AssignmentBulkGradeType) => {
+        const toastId = toast.loading("Grading submitted assignments...");
+        const resultValue = grade === AssignmentBulkGradeType.ALL_GOOD
+            ? AssignmentResultType.GOOD
+            : AssignmentResultType.AVERAGE;
+        const submittedEnrollments = enrollments.filter((enrollment) => answers[enrollment.user_id]);
+        setProgress(0);
+
+        if (submittedEnrollments.length === 0) {
+            toast.error("No submitted assignments found", { id: toastId });
+            return;
+        }
+
+        try {
+            for (let i = 0; i < submittedEnrollments.length; i++) {
+                const enrollment = submittedEnrollments[i];
+                const data = {
+                    result: resultValue,
+                    user_id: enrollment.user.id,
+                    assignment_id: assignment,
+                };
+
+                if (results[enrollment.user.id]) {
+                    await updateAssignmentResult({ data, id: results[enrollment.user.id].id });
+                } else {
+                    await createAssignmentResult({ data });
+                }
+
+                setProgress((prev) => prev + 100 / submittedEnrollments.length);
+            }
+
+            toast.success(`Marked ${submittedEnrollments.length} submitted assignments as ${resultValue}.`, { id: toastId });
+            setTimeout(() => {
+                setProgress(0);
+                setBulkGrade("");
+                onRefresh?.();
+            }, 1500);
+        } catch (error) {
+            toast.error(getErrorMessage(error), { id: toastId });
+            setProgress(0);
+        }
+    }
     
     const exportGrading = (type: "result" | "template") => {
         exportToExcel(`${assignment}-grading-template`, enrollments.map(e => ({
@@ -107,6 +151,22 @@ const AssignmentAnswerGrid = ({assignment, enrollments, results, answers, onRefr
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <select
+                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
+                    value={bulkGrade}
+                    onChange={(e) => {
+                        const selected = e.target.value as AssignmentBulkGradeType;
+                        setBulkGrade(selected);
+
+                        if (selected) {
+                            void applyBulkGrade(selected);
+                        }
+                    }}
+                >
+                    <option value="">Bulk grade submitted answers</option>
+                    <option value={AssignmentBulkGradeType.ALL_GOOD}>All Good</option>
+                    <option value={AssignmentBulkGradeType.ALL_AVERAGE}>All Average</option>
+                </select>
                 <Button onClick={() => exportGrading('result')} className="w-1/5 bg-slate-600 hover:bg-slate-500">Export</Button>
                 <Button className="w-1/5 bg-orange-600 hover:bg-orange-500" onClick={() => exportGrading('template')}>Download Grading Template</Button>
                 <label htmlFor="file" className="bg-green-600 hover:bg-green-500 px-2 w-1/5 rounded-md text-white text-sm font-medium flex items-center justify-center">
