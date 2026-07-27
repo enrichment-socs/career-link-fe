@@ -7,7 +7,7 @@ import { getBootcampAssignmentAnswers, getBootcampEvaluationAnswers, getBootcamp
 import { getBootcamp } from "~/features/bootcamp/api/get-bootcamp"
 import { getCertificateByBootcamp } from "~/features/certificates/api/get-certificate-by-bootcamp"
 import { useEffect, useState } from "react"
-import { type Enrollment } from "~/types/api"
+import { type Certificate, type Enrollment } from "~/types/api"
 import { CertificateType } from "~/types/enum"
 import PageSpinner from "~/components/ui/page-spinner"
 import { Button } from "~/components/ui/button"
@@ -23,7 +23,7 @@ export const clientLoader = async ({ params }: Route.ClientLoaderArgs) => {
 
 const BootcampReport = ({loaderData}:Route.ComponentProps) => {
 
-    const [certificates, setCertificates] = useState<Record<string, CertificateType[]>>({})
+    const [certificates, setCertificates] = useState<Record<string, Certificate[]>>({})
     const [sessionCount, setSessionCount] = useState(0)
     const [enrollments, setEnrollments] = useState<Enrollment[]>([])
     const [loading, setLoading] = useState(true)
@@ -42,9 +42,9 @@ const BootcampReport = ({loaderData}:Route.ComponentProps) => {
                 getBootcampReportByBootcampId(loaderData.id, true)
             ])
 
-            const byUser = certificates.reduce<Record<string, CertificateType[]>>((acc, cert) => {
+            const byUser = certificates.reduce<Record<string, Certificate[]>>((acc, cert) => {
                 if (!acc[cert.user_id]) acc[cert.user_id] = []
-                acc[cert.user_id].push(cert.type as CertificateType)
+                acc[cert.user_id].push(cert)
                 return acc
             }, {})
             setCertificates(byUser)

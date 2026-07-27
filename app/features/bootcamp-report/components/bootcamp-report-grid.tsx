@@ -2,7 +2,7 @@ import TableLayout from "~/components/layouts/table-layout"
 import EmptyMessage from "~/components/ui/empty-message"
 import { ReportDataTableHeader } from "~/components/ui/table-header"
 import { compare } from "~/lib/utils"
-import type { Enrollment, StudentAttempt } from "~/types/api"
+import type { Certificate, Enrollment, StudentAttempt } from "~/types/api"
 import StudentReportRow from "./student-report-row"
 import { Button } from "~/components/ui/button"
 import { useState, useMemo } from "react"
@@ -20,7 +20,7 @@ interface Props {
     enrollments: Enrollment[]
     session: number
     bootcampid: string
-    certificates: Record<string, CertificateType[]>
+    certificates: Record<string, Certificate[]>
     onRefresh?: () => void
 }
 
@@ -182,7 +182,7 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
     }
 
     const hasCertificateType = (userId: string, type: CertificateType) =>
-        (certificates[userId] ?? []).includes(type)
+        (certificates[userId] ?? []).some((certificate) => certificate.type === type)
 
     const selectAll = () => {
         const eligibleIds = sortedEnrollments
@@ -358,7 +358,7 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
                 >
                     {filteredEnrollments.map((e, idx) => (
                         <StudentReportRow
-                            certificateTypes={certificates[e.user_id] ?? []}
+                            certificates={certificates[e.user_id] ?? []}
                             cur={1}
                             idx={idx}
                             e={e}
@@ -366,6 +366,7 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
                             onSelect={onSelect}
                             isSelected={selected.includes(e.user_id)}
                             isEligible={eligibilityByUserId[e.user_id] ?? 0}
+                            onRefresh={onRefresh}
                         />
                     ))}
                 </TableLayout>

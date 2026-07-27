@@ -6,7 +6,9 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { TableCell, TableRow } from "~/components/ui/table";
 import { createCertificate } from "~/features/certificates/api/create-certificate";
-import type { Enrollment, StudentAttempt, User } from "~/types/api";
+import { deleteCertificate } from "~/features/certificates/api/delete-certificate";
+import { getErrorMessage } from "~/lib/error";
+import type { Certificate, Enrollment, StudentAttempt, User } from "~/types/api";
 import { AssignmentResultType, CertificateType, TestType } from "~/types/enum";
 import { Modal } from "~/components/modal";
 
@@ -18,7 +20,8 @@ interface Props {
   onSelect: (e: Enrollment, idx:number) => void;
   isSelected: boolean;
   isEligible: number;
-  certificateTypes: CertificateType[];
+  certificates: Certificate[];
+  onRefresh?: () => void;
 }
 
 const displayMaxScoreAttempt = (attempts: StudentAttempt[]) => {
@@ -39,13 +42,15 @@ const displayOrDash = (value?: string, limit = 10) => {
 };
 
 
-const StudentReportRow = ({ idx, cur, onSelect, e, sessionCount, isSelected, isEligible, certificateTypes }: Props) => {
+const StudentReportRow = ({ idx, cur, onSelect, e, sessionCount, isSelected, isEligible, certificates, onRefresh }: Props) => {
   const [modalOpen, setModalOpen] = useState(false);
 
   const assignmentGradeACount = e?.user.session_assignment_results.filter(e => e.result == AssignmentResultType.GOOD).length ?? 0
   const isGradeAEligible = sessionCount > 0 && assignmentGradeACount === sessionCount
-  const hasNormalCertificate = certificateTypes.includes(CertificateType.NORMAL)
-  const hasPremiumCertificate = certificateTypes.includes(CertificateType.PREMIUM)
+  const normalCertificate = certificates.find((certificate) => certificate.type === CertificateType.NORMAL)
+  const premiumCertificate = certificates.find((certificate) => certificate.type === CertificateType.PREMIUM)
+  const hasNormalCertificate = Boolean(normalCertificate)
+  const hasPremiumCertificate = Boolean(premiumCertificate)
   const hasAnyCertificate = hasNormalCertificate || hasPremiumCertificate
 
   const generateCertificate = async (e: Enrollment, type: "accomplished" | "grade_a") => {
@@ -63,6 +68,7 @@ const StudentReportRow = ({ idx, cur, onSelect, e, sessionCount, isSelected, isE
       toast.success(`Generate certificate for ${e.user.name} success!`, {
         id: toastId
       })
+      onRefresh?.()
     } catch (error) {
       toast.error(`Generate certificate for ${e.user.name} failed!`, {
         id: toastId
@@ -72,13 +78,33 @@ const StudentReportRow = ({ idx, cur, onSelect, e, sessionCount, isSelected, isE
 
   }
 
+  const undoCertificate = async (certificate: Certificate, label: string) => {
+    const confirmed = window.confirm(`Undo ${label} certificate for ${e.user.name}?`)
+    if (!confirmed) return
+
+    const toastId = toast.loading(`Undoing ${label} certificate...`)
+
+    try {
+      await deleteCertificate(certificate.id)
+      toast.success(`Undo ${label} certificate for ${e.user.name} success!`, {
+        id: toastId,
+      })
+      onRefresh?.()
+      setModalOpen(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error), {
+        id: toastId,
+      })
+    }
+  }
+
   const validateSelect = () => {
     if (!hasAnyCertificate) onSelect(e, idx)
   }
   return (
     <>
     <Modal
-      title="Generate Certificate"
+      title="Manage Certificate"
       isOpen={modalOpen}
       onClose={() => setModalOpen(false)}
     >
@@ -102,6 +128,22 @@ const StudentReportRow = ({ idx, cur, onSelect, e, sessionCount, isSelected, isE
         >
           Grade A (All Assignments)
         </Button>
+        {normalCertificate && (
+          <Button
+            variant="destructive"
+            onClick={() => undoCertificate(normalCertificate, "Accomplished")}
+          >
+            Undo Accomplished
+          </Button>
+        )}
+        {premiumCertificate && (
+          <Button
+            variant="destructive"
+            onClick={() => undoCertificate(premiumCertificate, "Grade A")}
+          >
+            Undo Grade A
+          </Button>
+        )}
       </div>
     </Modal>
     <TableRow className={`shadow-md p-5 border-box bg-white rounded-lg items-center my-2 flex w-full ${isEligible?"":"bg-red-200 hover:bg-red-300"} ${!hasAnyCertificate?"":"bg-green-200 hover:bg-green-300"}`}>
@@ -137,8 +179,8 @@ const StudentReportRow = ({ idx, cur, onSelect, e, sessionCount, isSelected, isE
         {e?.user.session_assignment_results.filter(e => e.result == AssignmentResultType.GOOD).length ?? "-"}
       </TableCell>
       <TableCell className="w-[11%] text-center whitespace-normal break-words">
-        <Button className={` ${!hasAnyCertificate?"":"bg-green-300 hover:bg-green-400 text-white"}`} disabled={hasNormalCertificate && hasPremiumCertificate} variant={`${isEligible?"outline":"destructive"}`} onClick={() => setModalOpen(true)}>
-          Generate
+        <Button className={` ${!hasAnyCertificate?"":"bg-green-300 hover:bg-green-400 text-white"}`} variant={`${isEligible?"outline":"destructive"}`} onClick={() => setModalOpen(true)}>
+          {hasAnyCertificate ? "Manage" : "Generate"}
         </Button>
       </TableCell>
     </TableRow>
