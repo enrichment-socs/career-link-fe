@@ -6,6 +6,9 @@ import { useEffect, useState } from "react";
 import type { Certificate } from "~/types/api";
 import EmptyMessage from "~/components/ui/empty-message";
 import PageSpinner from "~/components/ui/page-spinner";
+import toast from "react-hot-toast";
+import { deleteCertificate } from "~/features/certificates/api/delete-certificate";
+import { getErrorMessage } from "~/lib/error";
 
 const Certificates = () => {
   
@@ -28,6 +31,21 @@ const Certificates = () => {
     fetchCertificates()
   }, [])
 
+  const handleDeleteCertificate = async (id: string) => {
+    const confirmed = window.confirm("Delete this certificate and undo the generation?");
+    if (!confirmed) return;
+
+    const toastId = toast.loading("Deleting certificate...");
+
+    try {
+      await deleteCertificate(id);
+      setCertificates((current) => current.filter((certificate) => certificate.id !== id));
+      toast.success("Certificate deleted.", { id: toastId });
+    } catch (error) {
+      toast.error(getErrorMessage(error), { id: toastId });
+    }
+  }
+
   
   if (!user){
     return <div className="flex flex-col items-center justify-center">
@@ -40,7 +58,7 @@ const Certificates = () => {
 
   return (
     <NavbarContentLayout title="My Certificates">
-      <CertificateLists certificates={certificates} />
+      <CertificateLists certificates={certificates} onDelete={handleDeleteCertificate} />
     </NavbarContentLayout>
   );
 };

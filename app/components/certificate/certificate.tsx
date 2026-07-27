@@ -2,8 +2,15 @@ import certificatebg from "~/asset/certificate.png"
 import sign from "~/asset/sign.png"
 import sign2 from "~/asset/sign2.png"
 import type { Certificate } from "~/types/api"
+import { Button } from "~/components/ui/button"
+import { Trash2 } from "lucide-react"
 
-const CertificateCard = ({certificate}:{certificate:Certificate}) => {
+interface Props {
+    certificate: Certificate
+    onDelete?: (id: string) => void
+}
+
+const CertificateCard = ({certificate, onDelete}:Props) => {
     return (
         <div className={"object-cover w-full h-2/5 relative"} id="certificate">
             <img src={certificatebg} alt="background" className="w-full h-full object-cover" />
@@ -32,6 +39,18 @@ const CertificateCard = ({certificate}:{certificate:Certificate}) => {
             </div>
             
             </div>
+            {onDelete && (
+                <div className="absolute top-4 right-4">
+                    <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => onDelete(certificate.id)}
+                    >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Undo
+                    </Button>
+                </div>
+            )}
         </div>
     )
 }
