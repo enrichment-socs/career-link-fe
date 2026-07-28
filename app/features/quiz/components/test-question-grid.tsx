@@ -1,7 +1,8 @@
 import { Button } from "~/components/ui/button"
 import CreateQuestion from "./create-question"
 import type { Question } from "~/types/api"
-import { exportToExcel, importExcel } from "~/lib/excel"
+import { importExcel } from "~/lib/excel"
+import { exportToTxt } from "~/lib/txt"
 import { useState, type ChangeEvent } from "react"
 import { Modal, type ModalType } from "~/components/modal"
 import { DeleteQuestion } from "./delete-question"
@@ -24,6 +25,29 @@ interface Template {
     D: string,
     answer: 'A' | 'B' | 'C' | 'D',
 }
+
+const templateToTxt = (data: Template[]): string =>
+    data
+        .map((t) => `${t.question}\nA) ${t.A}\nB) ${t.B}\nC) ${t.C}\nD) ${t.D}\nANSWER: ${t.answer}`)
+        .join("\n\n")
+
+const questionsToTemplate = (data: Question[]): Template[] =>
+    [...data]
+        .sort((a, b) => a.number - b.number)
+        .map((q) => {
+            const options = q.options ?? []
+            const letters: ("A" | "B" | "C" | "D")[] = ["A", "B", "C", "D"]
+            const answerIndex = options.findIndex((o) => o.is_answer)
+            return {
+                number: q.number,
+                question: q.question,
+                A: options[0]?.option ?? "",
+                B: options[1]?.option ?? "",
+                C: options[2]?.option ?? "",
+                D: options[3]?.option ?? "",
+                answer: letters[answerIndex] ?? "A",
+            }
+        })
 
 interface Props {
     questions:Question[],
@@ -222,9 +246,14 @@ const TestQuestionGrid = ({questions, id, activeModal, onCreate, onConfirmDelete
                     <Button variant={'destructive'} onClick={() => {onDelete(-1, questions[0])}}>
                         Remove all Question
                     </Button>
-                    <Button onClick={() => exportToExcel('template', template)} className="bg-purple-500 hover:bg-purple-400">
+                    <Button onClick={() => exportToTxt('template', templateToTxt(template))} className="bg-purple-500 hover:bg-purple-400">
                         Download Test Template
                     </Button>
+                    {questions.length > 0 &&
+                        <Button onClick={() => exportToTxt(`questions-${id}`, templateToTxt(questionsToTemplate(questions)))} className="bg-blue-500 hover:bg-blue-400">
+                            Download Questions
+                        </Button>
+                    }
                     <label htmlFor="file" className="bg-green-600 hover:bg-green-500 px-2 rounded-md text-white flex items-center justify-center">
                         Import Test
                     </label>
