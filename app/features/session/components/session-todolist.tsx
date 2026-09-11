@@ -181,7 +181,7 @@ const SessionTodolist = ({
           )
         ) : (
           <Link to={`attendance`}>
-            <Button className="w-1/6">View Attendances</Button>
+            <Button className="w-full">View Attendances</Button>
           </Link>
         )}
 

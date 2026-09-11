@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { getUsers } from "~/features/home/api/get-student-data";
 import PageSpinner from "~/components/ui/page-spinner";
+import {DuplicateBootcamp} from "~/features/bootcamp/components/duplicate-bootcamp";
 
 const Bootcamps = () => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
@@ -117,6 +118,16 @@ const Bootcamps = () => {
       </Modal>
 
       <Modal
+          title="Duplicate Existing Bootcamp"
+          isOpen={activeModal === "duplicate"}
+          onClose={() => setActiveModal(null)}
+      >
+        <DuplicateBootcamp
+            onSuccess={onSuccess}
+        />
+      </Modal>
+
+      <Modal
         title="Update Bootcamp"
         isOpen={activeModal === "update"}
         onClose={() => setActiveModal(null)}
@@ -156,7 +167,15 @@ const Bootcamps = () => {
                     className="gap-2"
                   >
                     <Plus className="h-4 w-4" />
-                    Add Bootcamp
+                    Add New Bootcamp
+                  </Button>
+
+                  <Button
+                      onClick={async () => { await fetchUsersIfNeeded(); setActiveModal("duplicate"); }}
+                      className="gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Duplicate Existing Bootcamp
                   </Button>
 
                   <div className="relative flex-1">

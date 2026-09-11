@@ -10,7 +10,8 @@ interface Props<T extends FieldValues> {
     placeholder?: string,
     type?: string,
     className?: string,
-    step?:number|string
+    step?:number|string,
+    minValue?:number
   }
 
 export default function Field<T extends FieldValues>({
@@ -20,7 +21,8 @@ export default function Field<T extends FieldValues>({
     placeholder = "",
     type = "text",
     className,
-    step
+    step,
+    minValue
   }: Props<T>) {
     return (
       <FormField
@@ -29,10 +31,10 @@ export default function Field<T extends FieldValues>({
         render={({ field }) => (
           <FormItem className="w-full">
             {label && <FormLabel>{label}</FormLabel>}
-            <FormControl>
+            <FormControl className={"flex flex-row gap-1 items-center"}>
               {type == 'checkbox' ?
                 <Checkbox {...field} className={className} checked={Boolean(field.value)} onCheckedChange={field.onChange} />:
-                <Input type={type} placeholder={placeholder} {...field} className={className} step={step}/>
+                <Input type={type} placeholder={placeholder} {...field} className={className} step={step} min={minValue}/>
               }
             </FormControl>
             <FormMessage />

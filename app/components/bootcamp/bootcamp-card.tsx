@@ -40,7 +40,7 @@ export const BootcampCard = ({
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 group-hover:text-primary transition-colors">
-                    {bootcamp.name}
+                    Batch {bootcamp.batch} - {bootcamp.name}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                     {bootcamp.description}
@@ -131,7 +131,7 @@ export const BootcampCard = ({
       <CardContent className="flex-1 flex flex-col justify-between space-y-4">
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-gray-800 line-clamp-2 group-hover:text-primary transition-colors">
-            {bootcamp.name}
+            Batch {bootcamp.batch} - {bootcamp.name}
           </h3>
 
           <div className="flex flex-wrap gap-2">

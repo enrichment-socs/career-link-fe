@@ -43,13 +43,13 @@ export const CreateBootcamp = ({
       type_id: "",
       speaker_id: "",
       about_this_bootcamp: "",
+      batch: 1,
     },
   });
 
   const onSubmit = async (data: CreateBootcampInput) => {
     const toastId = toast.loading("Creating bootcamp...");
     try {
-      console.log(data.image_file);
       const res = await createBootcamp({ data });
       toast.success(res.message, { id: toastId });
       form.reset();
@@ -113,6 +113,14 @@ export const CreateBootcamp = ({
                 className="mt-4 w-full max-h-32 object-cover rounded-md border"
               />
             )}
+            <Field
+                control={form.control}
+                placeholder="Enter Batch"
+                minValue = {1}
+                label="Bootcamp Batch"
+                type="number"
+                name="batch"
+            />
           </>
         ) : (
           <div className="space-y-4">

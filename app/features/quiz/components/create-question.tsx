@@ -68,7 +68,7 @@ const CreateQuestion = ({sessionTestId, number, question, onDelete, onSuccess}:P
                         <Field control={form.control} placeholder="Enter question" label={`Question ${number}`} type="text" name="question"/>
                     </>
                     <div className="grid grid-cols-2 gap-2">
-                        {form.getValues('options').map((e,idx) => <div key={e.question_id+idx} className="grid grid-cols-10">
+                        {form.getValues('options').map((e,idx) => <div key={e.question_id+idx} className="grid grid-cols-10 flex flex-col items-center">
                             <Field control={form.control} label="" type="checkbox" name={`options.${idx}.is_answer`} className="border border-black flex justify-center items-center"/>
                             <div className="col-span-9">
                                 <Field control={form.control} placeholder="Enter option" label="" type="text" name={`options.${idx}.option`} />
