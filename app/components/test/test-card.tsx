@@ -76,7 +76,7 @@ const TestCard = ({ sessionId, testType, test, attempts, onRefresh }: Props) => 
   return (
     <>
       <Modal
-        title={`Add ${testType?.replace("_", " ")}`}
+        title={`Add ${testType?.replace("_", " ").replace(/\b\w/g, (char) => char.toUpperCase())}`}
         isOpen={activeModal === "create"}
         onClose={() => setActiveModal(null)}
       >

@@ -63,6 +63,7 @@ export type Bootcamp = {
   description: string;
   sessions: Session[];
   speaker_id: string;
+  batch:number;
 };
 
 export type BootcampCategory = {

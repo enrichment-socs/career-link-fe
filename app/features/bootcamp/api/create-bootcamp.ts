@@ -24,6 +24,7 @@ export const createBootcampInputSchema = z.object({
       { message: "Invalid image file type" }
     )
     .optional(),
+    batch: z.number().min(1, "Batch is required"),
 });
 
 export type CreateBootcampInput = z.infer<typeof createBootcampInputSchema>;
