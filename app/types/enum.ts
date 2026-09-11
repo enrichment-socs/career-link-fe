@@ -13,6 +13,11 @@ export enum AssignmentResultType {
     GOOD= 'good',
 }
 
+export enum AssignmentBulkGradeType {
+    ALL_AVERAGE = 'all_average',
+    ALL_GOOD = 'all_good',
+}
+
 export enum AnnouncementType {
     IMPORTANT='important',
     INFORMATION='information',

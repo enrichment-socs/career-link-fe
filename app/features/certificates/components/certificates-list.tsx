@@ -14,9 +14,10 @@ import {
 
 interface CertificateListProps {
   certificates: Certificate[];
+  onDelete?: (id: string) => void;
 }
 
-export const CertificateLists = ({ certificates }: CertificateListProps) => {
+export const CertificateLists = ({ certificates, onDelete }: CertificateListProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterMethod, setFilterMethod] = useState("all");
@@ -113,6 +114,7 @@ export const CertificateLists = ({ certificates }: CertificateListProps) => {
               key={certificate.id || index}
               certificate={certificate}
               viewMode={viewMode}
+              onDelete={onDelete}
             />
           ))
         ) : (

@@ -2,7 +2,7 @@ import TableLayout from "~/components/layouts/table-layout"
 import EmptyMessage from "~/components/ui/empty-message"
 import { ReportDataTableHeader } from "~/components/ui/table-header"
 import { compare } from "~/lib/utils"
-import type { Enrollment, StudentAttempt } from "~/types/api"
+import type { Certificate, Enrollment, StudentAttempt } from "~/types/api"
 import StudentReportRow from "./student-report-row"
 import { Button } from "~/components/ui/button"
 import { useState, useMemo } from "react"
@@ -14,12 +14,13 @@ import { Progress } from "~/components/ui/progress"
 import { exportToExcel } from "~/lib/excel"
 import { Checkbox } from "~/components/ui/checkbox"
 import { Modal } from "~/components/modal"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 
 interface Props {
     enrollments: Enrollment[]
     session: number
     bootcampid: string
-    certificates: Record<string, CertificateType[]>
+    certificates: Record<string, Certificate[]>
     onRefresh?: () => void
 }
 
@@ -114,6 +115,7 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
     const [selected, setSelected] = useState<string[]>([])
     const [progress, setProgress] = useState(0)
     const [searchTerm, setSearchTerm] = useState("")
+    const [selectionAction, setSelectionAction] = useState("")
     const [bulkModalOpen, setBulkModalOpen] = useState(false)
     const [criteria, setCriteria] = useState<EligibilityCriteria>({
         clockIn: true,
@@ -180,13 +182,39 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
     }
 
     const hasCertificateType = (userId: string, type: CertificateType) =>
-        (certificates[userId] ?? []).includes(type)
+        (certificates[userId] ?? []).some((certificate) => certificate.type === type)
 
     const selectAll = () => {
         const eligibleIds = sortedEnrollments
             .filter((e) => eligibilityByUserId[e.user_id] != 0)
             .map((e) => e.user_id)
         setSelected(eligibleIds)
+    }
+
+    const selectAllStudents = () => {
+        setSelected(sortedEnrollments.map((enrollment) => enrollment.user_id))
+    }
+
+    const clearSelection = () => {
+        setSelected([])
+    }
+
+    const handleSelectionAction = (value: string) => {
+        setSelectionAction(value)
+
+        if (value === "all") {
+            selectAllStudents()
+        }
+
+        if (value === "eligible") {
+            selectAll()
+        }
+
+        if (value === "clear") {
+            clearSelection()
+        }
+
+        setSelectionAction("")
     }
 
     const generateAll = async (type: "accomplished" | "grade_a") => {
@@ -310,8 +338,17 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
                             Assignment Grade A
                         </label>
                     </div>
-                    <Button onClick={exportResult} variant={'success'}>Export to Excel</Button>
-                    <Button onClick={selectAll} variant={'accent'}>Select by Criteria</Button>
+                    <Button onClick={exportResult} variant={'default'}>Export to Excel</Button>
+                    <Select value={selectionAction} onValueChange={handleSelectionAction}>
+                        <SelectTrigger className="w-56 bg-white">
+                            <SelectValue placeholder="Select students" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Select All Students</SelectItem>
+                            <SelectItem value="eligible">Select by Criteria</SelectItem>
+                            <SelectItem value="clear">Clear Selection</SelectItem>
+                        </SelectContent>
+                    </Select>
                     <Button onClick={() => setBulkModalOpen(true)}>Generate</Button>
                     {selected.length + " Selected"}
                 </div>
@@ -321,7 +358,7 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
                 >
                     {filteredEnrollments.map((e, idx) => (
                         <StudentReportRow
-                            certificateTypes={certificates[e.user_id] ?? []}
+                            certificates={certificates[e.user_id] ?? []}
                             cur={1}
                             idx={idx}
                             e={e}
@@ -329,6 +366,7 @@ const BootcampReportGrid = ({enrollments, session, bootcampid, certificates, onR
                             onSelect={onSelect}
                             isSelected={selected.includes(e.user_id)}
                             isEligible={eligibilityByUserId[e.user_id] ?? 0}
+                            onRefresh={onRefresh}
                         />
                     ))}
                 </TableLayout>

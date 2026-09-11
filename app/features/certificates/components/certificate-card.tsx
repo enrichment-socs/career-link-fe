@@ -11,11 +11,13 @@ import { format } from "date-fns";
 interface CertificateCardProps {
   certificate: Certificate;
   viewMode?: "grid" | "list";
+  onDelete?: (id: string) => void;
 }
 
 export const CertificateCard = ({
   certificate,
   viewMode = "list",
+  onDelete,
 }: CertificateCardProps) => {
   const handleDownloadImage = async () => {
     const element = document.getElementById("certificate");
@@ -68,6 +70,16 @@ export const CertificateCard = ({
             >
               <Download className="w-4 h-4" />
             </Button>
+            {onDelete && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => onDelete(certificate.id)}
+                className="px-3"
+              >
+                Undo
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -112,6 +124,15 @@ export const CertificateCard = ({
               <Download className="w-4 h-4 mr-2" />
               Download
             </Button>
+            {onDelete && (
+              <Button
+                variant="destructive"
+                onClick={() => onDelete(certificate.id)}
+                className="flex-1 lg:flex-none"
+              >
+                Undo
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
