@@ -63,6 +63,7 @@ export default [
       ),
     ]),
     ...prefix("admin", [
+      route("enrollments", "routes/app/admin/enrollments/global-enrollments.tsx"),
       route("bootcamps", "routes/app/admin/bootcamps/bootcamps.tsx"),
       route("bootcamps/progress", "routes/app/admin/bootcamps/bootcamp-progress-list.tsx"),
       route(

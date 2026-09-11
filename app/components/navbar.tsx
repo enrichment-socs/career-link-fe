@@ -22,6 +22,7 @@ export default function Navbar() {
       children: [
         { label: "Category", to: "admin/bootcamps/categories" },
         { label: "Types", to: "admin/bootcamps/types" },
+        { label: "Enroll Students", to: "admin/enrollments" },
       ],
     },
     {
