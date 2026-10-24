@@ -23,33 +23,23 @@ const FuturePlan = ({ onClick, skill, position, employment_status, company_name,
     <Card>
       <CardContent className="space-y-6">
         <div className="flex justify-between items-start">
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-2xl font-semibold text-primary mb-2">
-                {positionLabel}
-              </h3>
-              <p className="text-lg">{position || "-"}</p>
-            </div>
+          <div>
+            <h3 className="text-2xl font-semibold text-primary mb-2">
+              {positionLabel}
+            </h3>
+            <p className="text-lg">{position || "-"}</p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClick}>
-            <MdEdit className="w-5 h-5"/>
-          </Button>
         </div>
 
         <Separator/>
 
         <div className="flex justify-between items-start">
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-2xl font-semibold text-primary mb-2">
-                Employment Status
-              </h3>
-              <p className="text-lg">{employment_status}</p>
-            </div>
+          <div>
+            <h3 className="text-2xl font-semibold text-primary mb-2">
+              Employment Status
+            </h3>
+            <p className="text-lg">{employment_status}</p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClick}>
-            <MdEdit className="w-5 h-5"/>
-          </Button>
         </div>
 
         {employment_status === EmploymentStatus.EMPLOYED && (
