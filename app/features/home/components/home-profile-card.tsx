@@ -203,9 +203,16 @@ export const HomeProfileCard = () => {
       </div>
 
       <div className="space-y-6 mt-12">
-        <h2 className="text-3xl font-bold text-primary">My Future Plan</h2>
-        <FuturePlan
-          onClick={() => setActiveModal("update")}
+          <div className={"flex flex-row justify-between items-center"}>
+              <h2 className="text-3xl font-bold text-primary">My Future Plan</h2>
+              <Button onClick={() => setActiveModal("update")}>
+                  <MdEdit className="w-5 h-5"/>
+                  Edit Profile
+              </Button>
+          </div>
+
+          <FuturePlan
+              onClick={() => setActiveModal("update")}
           position={user?.future_position ?? ""}
           skill={user?.skill ?? ""}
           employment_status={user?.status ?? EmploymentStatus.NOT_EMPLOYED}

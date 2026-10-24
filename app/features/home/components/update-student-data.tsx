@@ -14,12 +14,15 @@ import {
     type UpdateStudentEnrichmentDataInput, updateStudentEnrichmentDataInputSchema
 } from "~/features/student-enrichment-data/api/update-student-enrichment-data";
 import {useState} from "react";
+import {useRole} from "~/provider/role-testing-provider";
 
 const UpdateStudentData = ({user,onSuccess}:Props) => {
     const statusValues = Object.values(EmploymentStatus).map((val) => ({
         value: val,
         text: val,
     }));
+
+    const { role } = useRole();
 
     const [selectedBatch, setSelectedBatch] = useState<number | null>(null);
     const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
@@ -159,48 +162,55 @@ const UpdateStudentData = ({user,onSuccess}:Props) => {
                 </form>
             </Form>
 
-            <div className="flex gap-2">
-                {user.student_enrichment_data?.map((enrichment) => (
-                    <Button
-                        key={enrichment.enrichment_batch}
-                        type="button"
-                        onClick={() =>
-                            selectEnrichmentBatch(enrichment.enrichment_batch)
-                        }
-                    >
-                        Batch {enrichment.enrichment_batch}
-                    </Button>
-                ))}
-            </div>
-
-            <Form {...studentEnrichmentDataForm}>
-                <form onSubmit={studentEnrichmentDataForm.handleSubmit(onSubmitStudentEnrichmentData)}
-                      className="space-y-4">
-
-                    <p className={"text-sm"}>Chosen Batch: {selectedBatch ? selectedBatch : "No batch selected"}</p>
-                    <Field
-                        control={studentEnrichmentDataForm.control}
-                        label="Company"
-                        placeholder="Enter company"
-                        type="text"
-                        name="company"
-                    />
-
-                    <Field
-                        control={studentEnrichmentDataForm.control}
-                        label="Position"
-                        placeholder="Enter position"
-                        type="text"
-                        name="position"
-                    />
-                    <div className="flex justify-end">
-                        <Button type="submit">
-                            Update Student Enrichment Data
-                        </Button>
+            {role === "admin" && (
+                <>
+                    <div className="flex gap-2">
+                        {user.student_enrichment_data?.map((enrichment) => (
+                            <Button
+                                key={enrichment.enrichment_batch}
+                                type="button"
+                                onClick={() =>
+                                    selectEnrichmentBatch(enrichment.enrichment_batch)
+                                }
+                            >
+                                Batch {enrichment.enrichment_batch}
+                            </Button>
+                        ))}
                     </div>
 
-                </form>
-            </Form>
+                    <Form {...studentEnrichmentDataForm}>
+                        <form onSubmit={studentEnrichmentDataForm.handleSubmit(onSubmitStudentEnrichmentData)}
+                              className="space-y-4">
+
+                            <p className={"text-sm"}>Chosen
+                                Batch: {selectedBatch ? selectedBatch : "No batch selected"}</p>
+                            <Field
+                                control={studentEnrichmentDataForm.control}
+                                label="Company"
+                                placeholder="Enter company"
+                                type="text"
+                                name="company"
+                            />
+
+                            <Field
+                                control={studentEnrichmentDataForm.control}
+                                label="Position"
+                                placeholder="Enter position"
+                                type="text"
+                                name="position"
+                            />
+                            <div className="flex justify-end">
+                                <Button type="submit">
+                                    Update Student Enrichment Data
+                                </Button>
+                            </div>
+
+                        </form>
+                    </Form>
+                </>
+            )}
+
+
         </div>
 
 
