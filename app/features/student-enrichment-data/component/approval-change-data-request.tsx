@@ -146,7 +146,7 @@ const ApprovalChangeDataRequest = ({request, onSuccess}:Props) => {
                     defaultValue={request.approval_status}/>
                     <Button
                         type="submit"
-                        disabled={form.formState.isSubmitting || request.updated_at}
+                        disabled={(form.formState.isSubmitting || request.updated_at !== null)}
                     >{request.updated_at ? "Already answered" :"Answer Request"}</Button>
                 </form>
             </Form>

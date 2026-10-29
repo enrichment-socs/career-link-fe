@@ -25,6 +25,7 @@ import {getUserApplied} from "~/features/announcements/api/get-user-applied";
 import {useNavigate} from "react-router";
 import {EmploymentStatus} from "~/types/enum";
 import {format} from "date-fns";
+import Dropdown from "~/components/ui/dropdown";
 
 interface Props {
   announcement: Announcement;

@@ -20,6 +20,12 @@ export const updateStudentInputSchema = z.object({
   company_name: z.string().optional(),
   business_type: z.string().optional(),
   university_name: z.string().optional(),
+  skills: z.array(
+      z.object({
+        id: z.string().optional(),
+        name: z.string().min(1),
+      })
+  ).optional(),
 });
 
 export type UpdateStudentDataInput = z.infer<typeof updateStudentInputSchema>;
@@ -42,6 +48,11 @@ export const updateStudentData = ({
         formData.append(key, value instanceof File ? value : String(value));
       }
     }
+
+  data.skills?.forEach((s, i) => {
+    if (s.id) formData.append(`skills[${i}][id]`, s.id);
+    formData.append(`skills[${i}][name]`, s.name);
+  });
     
   return api.post(`/user/${id}`, formData);
 };

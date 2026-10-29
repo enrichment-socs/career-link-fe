@@ -3,20 +3,35 @@ import { updateStudentData, updateStudentInputSchema, type UpdateStudentDataInpu
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "~/lib/error";
-import { Form } from "~/components/ui/form";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "~/components/ui/form";
 import Field from "~/components/ui/form-field";
 import { Button } from "~/components/ui/button";
-import type { User } from "~/types/api";
+import type {Skill, User} from "~/types/api";
 import {EmploymentStatus} from "~/types/enum";
 import Dropdown from "~/components/ui/dropdown";
 import {
     updateStudentEnrichmentData,
     type UpdateStudentEnrichmentDataInput, updateStudentEnrichmentDataInputSchema
 } from "~/features/student-enrichment-data/api/update-student-enrichment-data";
-import {useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {useRole} from "~/provider/role-testing-provider";
+import {SkillsInput} from "~/features/home/components/skills-input";
+import {getAllSkills} from "~/features/skills/api/get-all-skills";
 
 const UpdateStudentData = ({user,onSuccess}:Props) => {
+
+    const DEFAULT_SUGGESTIONS = [
+        "C", "C++", "C#", "Java", "JavaScript", "TypeScript", "Python", "Go",
+        "React", "Next.js", "Node.js", "SQL", "PostgreSQL", "Docker", "Git",
+    ];
+
     const statusValues = Object.values(EmploymentStatus).map((val) => ({
         value: val,
         text: val,
@@ -26,6 +41,7 @@ const UpdateStudentData = ({user,onSuccess}:Props) => {
 
     const [selectedBatch, setSelectedBatch] = useState<number | null>(null);
     const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
+    const [allSkills, setAllSkills] = useState<Skill[]>([])
 
     const studentForm = useForm<UpdateStudentDataInput>({
         resolver: zodResolver(updateStudentInputSchema),
@@ -42,7 +58,8 @@ const UpdateStudentData = ({user,onSuccess}:Props) => {
             gpa: user.gpa,
             company_name: user.company_name ?? "",
             business_type: user.business_type ?? "",
-            university_name: user.university_name ?? ""
+            university_name: user.university_name ?? "",
+            skills: user.skills ?? []
         },
     });
 
@@ -115,6 +132,34 @@ const UpdateStudentData = ({user,onSuccess}:Props) => {
         }
     };
 
+    const fetchAllSkills = async () =>{
+        try{
+            let res = await getAllSkills()
+            setAllSkills(res.data)
+        }catch(error){
+
+        }
+    }
+
+    useEffect(() => {
+        fetchAllSkills();
+    }, []);
+
+    const suggestions = useMemo(() => {
+        const seen = new Set<string>();
+        const merged: string[] = [];
+
+        [...allSkills.map((s) => s.name), ...DEFAULT_SUGGESTIONS].forEach((name) => {
+            const key = name.trim().toLowerCase();
+            if (key && !seen.has(key)) {
+                seen.add(key);
+                merged.push(name.trim());
+            }
+        });
+
+        return merged;
+    }, [allSkills]);
+
     const positionLabel = watchedStatus === EmploymentStatus.EMPLOYED ? "Position" : "Future Position";
     const positionPlaceholder = watchedStatus === EmploymentStatus.ENTREPRENEUR
         ? "e.g. CEO, Founder, Business Owner"
@@ -142,12 +187,41 @@ const UpdateStudentData = ({user,onSuccess}:Props) => {
                         <Field control={studentForm.control} placeholder="e.g. Universitas Indonesia, NUS, MIT"
                                label="University / Institution" type="text" name="university_name"/>
                     )}
-                    <Field control={studentForm.control} placeholder="Enter here (separated by comma) ex: C,C++"
-                           label="Skill" type="text" name="skill"/>
+                    <FormField
+                        control={studentForm.control}
+                        name="skills"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Skill</FormLabel>
+                                <FormControl>
+                                    <SkillsInput
+                                        value={(field.value ?? []).map((s) => s.name)}
+                                        onChange={(names) => {
+                                            const current = field.value ?? [];
+                                            field.onChange(
+                                                names.map(
+                                                    (name) =>
+                                                        current.find((s) => s.name.toLowerCase() === name.toLowerCase()) ??
+                                                        allSkills.find((s) => s.name.toLowerCase() === name.toLowerCase()) ?? { name }
+                                                )
+                                            );
+                                        }}
+
+                                        suggestions={suggestions}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <Field control={studentForm.control} placeholder="Enter Major" label="Major" type="text"
                            name="major"/>
                     <Field control={studentForm.control} placeholder="Enter CV Link" label="CV Link" type="text"
                            name="cv"/>
+                    {role === "user" && (
+                        <p className={"text-sm text-justify"}>Please ensure that the data provided relates to you and not to someone else.</p>
+                    )}
+
                     <div className="flex justify-end">
                         <Button
                             type="submit"

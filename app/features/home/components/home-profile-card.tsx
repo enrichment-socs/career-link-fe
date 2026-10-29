@@ -68,6 +68,8 @@ export const HomeProfileCard = () => {
         }
     };
 
+    console.log(user)
+
   return (
     <div className="w-full mx-auto p-6 space-y-8">
       <Modal
@@ -214,7 +216,7 @@ export const HomeProfileCard = () => {
           <FuturePlan
               onClick={() => setActiveModal("update")}
           position={user?.future_position ?? ""}
-          skill={user?.skill ?? ""}
+          skill={user?.skills ?? []}
           employment_status={user?.status ?? EmploymentStatus.NOT_EMPLOYED}
           company_name={user?.company_name ?? ""}
           business_type={user?.business_type ?? ""}
