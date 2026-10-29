@@ -79,7 +79,8 @@ export default [
         "routes/app/admin/bootcamps/bootcamp-categories.tsx"
       ),
       route("bootcamps/types", "routes/app/admin/bootcamps/bootcamp-types.tsx"),
-      route("requests", "routes/app/admin/requests/requests.tsx"),
+      route("managements/requests", "routes/app/admin/managements/requests.tsx"),
+      route("managements/skills", "routes/app/admin/managements/skill-managements.tsx"),
     ]),
   ]),
 

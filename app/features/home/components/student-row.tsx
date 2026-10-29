@@ -45,6 +45,8 @@ const StudentRow = ({ idx, cur, e, bootcamp_id }: Props) => {
     }
   };
 
+    const skillNames = e?.skills?.map((skill) => skill.name).join(", ") || "";
+
   return (
     <TableRow className="shadow-md p-5 border-box bg-white rounded-lg items-center my-2 flex w-full text-xs">
       <TableCell className="w-[2%] font-medium text-center">
@@ -60,49 +62,49 @@ const StudentRow = ({ idx, cur, e, bootcamp_id }: Props) => {
       </TableCell>
 
       <TableCell className="w-[10%] text-center truncate">
-        <TooltipLayout text={e?.email ?? "no email"}>
+        <TooltipLayout text={e?.email ?? "No email"}>
           <p>{e?.email ? e.email : "-"}</p>
         </TooltipLayout>
       </TableCell>
 
       <TableCell className="w-[7%] text-center truncate">
-        <TooltipLayout text={e?.phone ?? "no phone"}>
+        <TooltipLayout text={e?.phone ?? "No phone"}>
           <p>{e?.phone ? e.phone.replace("+62", "0") : "-"}</p>
         </TooltipLayout>
       </TableCell>
 
       <TableCell className="w-[6%] text-center truncate">
-        <TooltipLayout text={e?.major ?? "no major yet"}>
+        <TooltipLayout text={e?.major ?? "No major yet"}>
           <p>{e?.major ? e.major : "-"}</p>
         </TooltipLayout>
       </TableCell>
 
       <TableCell className="w-[3%] text-center truncate">
-        <TooltipLayout text={e?.gpa ?? "no gpa yet"}>
+        <TooltipLayout text={e?.gpa ?? "No GPA yet"}>
           <p>{e?.gpa ? e.gpa : "-"}</p>
         </TooltipLayout>
       </TableCell>
 
       <TableCell className="w-[7%] text-center truncate">
-        <TooltipLayout text={e?.status ?? "no status yet"}>
+        <TooltipLayout text={e?.status ?? "No status yet"}>
           <p>{e?.status ? e.status : "-"}</p>
         </TooltipLayout>
       </TableCell>
 
       <TableCell className="w-[7%] text-center truncate">
-        <TooltipLayout text={e?.future_position ?? "no position yet"}>
+        <TooltipLayout text={e?.future_position ?? "No position yet"}>
           <p>{e?.future_position ? e.future_position : "-"}</p>
         </TooltipLayout>
       </TableCell>
 
-      <TableCell className="w-[5%] text-center truncate">
-        <TooltipLayout text={e?.skill ?? "no skill yet"}>
-          <p>{e?.skill ? e.skill : "-"}</p>
-        </TooltipLayout>
-      </TableCell>
+        <TableCell className="w-[5%] text-center truncate">
+          <TooltipLayout text={skillNames || "No skill yet"}>
+            <p>{skillNames || "-"}</p>
+          </TooltipLayout>
+        </TableCell>
 
       <TableCell className="w-[5%] text-center truncate">
-        <TooltipLayout text={e?.cv ?? "no cv yet"}>
+        <TooltipLayout text={e?.cv ?? "No CV yet"}>
           <p>{e?.cv ? e.cv : "-"}</p>
         </TooltipLayout>
       </TableCell>

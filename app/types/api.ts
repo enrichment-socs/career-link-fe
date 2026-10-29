@@ -18,6 +18,7 @@ export type User = {
   enrichment_track: string;
   future_position: string;
   skill: string;
+  skills: Skill[];
   student_attempts: StudentAttempt[];
   student_enrichment_data: StudentEnrichmentData[];
   session_attendances: Attendance[];
@@ -38,6 +39,11 @@ export type StudentEnrichmentData = {
   company:string;
   position:string;
   enrichment_batch:number;
+}
+
+export type Skill = {
+  id:string;
+  name:string;
 }
 
 export type ChangeDataRequest = {

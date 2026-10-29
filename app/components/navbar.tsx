@@ -33,9 +33,13 @@ export default function Navbar() {
       userOnly: true
     },
     {
-      label: "Request",
-      to: "admin/requests",
-      adminOnly: true
+      label: "Management",
+      to: "home",
+      adminOnly: true,
+      children: [
+        {label: "Request", to: "admin/managements/requests"},
+        {label: "Skill Manager", to: "admin/managements/skills"},
+      ]
     },
   ];
 

@@ -1,13 +1,12 @@
-import { MdEdit } from "react-icons/md";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { EmploymentStatus } from "~/types/enum";
+import type {Skill} from "~/types/api";
 
 interface Props {
   onClick: () => void;
-  skill: string;
+  skill: Skill[];
   position: string;
   employment_status: EmploymentStatus;
   company_name?: string;
@@ -77,11 +76,15 @@ const FuturePlan = ({ onClick, skill, position, employment_status, company_name,
         <div className="space-y-4">
           <h3 className="text-2xl font-semibold text-primary">Skills</h3>
           <div className="flex flex-wrap gap-2">
-            {skill.split(',').map((s, index) => (
-                <Badge key={index} variant="secondary" className="text-sm">
-                  {s}
-                </Badge>
-            ))}
+            {skill?.length ? (
+                skill.map((skill) => (
+                    <Badge key={skill.id} variant="secondary" className="text-sm">
+                      {skill.name}
+                    </Badge>
+                ))
+            ) : (
+                <p className="text-lg">-</p>
+            )}
           </div>
         </div>
       </CardContent>
